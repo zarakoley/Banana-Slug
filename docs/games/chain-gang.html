@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chain Gang</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d1a;
+      --surface: #12122a;
+      --surface2: #1a1a35;
+      --cyan: #00f5ff;
+      --cyan-dim: #00b8c8;
+      --cyan-glow: rgba(0, 245, 255, 0.18);
+      --green: #00ff88;
+      --red: #ff3860;
+      --text: #e0e8ff;
+      --muted: #6a7090;
+      --border: rgba(0, 245, 255, 0.2);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 16px 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 0 10px;
+    }
+
+    .game-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      text-shadow: 0 0 18px var(--cyan);
+    }
+
+    .hub-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      border: 1px solid var(--muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .hub-link:hover {
+      color: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    /* ── Chain Visual ── */
+    .chain-track {
+      width: 100%;
+      max-width: 860px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin: 10px 0 22px;
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      gap: 0;
+    }
+
+    .chain-track::-webkit-scrollbar { height: 4px; }
+    .chain-track::-webkit-scrollbar-track { background: transparent; }
+    .chain-track::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 4px; }
+
+    .chain-empty {
+      color: var(--muted);
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+
+    .chain-node {
+      display: inline-flex;
+      align-items: center;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+      flex-shrink: 0;
+    }
+
+    .chain-word {
+      background: var(--surface2);
+      border: 1.5px solid var(--cyan);
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 1.5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-shadow: 0 0 8px var(--cyan);
+      white-space: nowrap;
+    }
+
+    .chain-word.start-word {
+      border-color: var(--cyan-dim);
+      color: var(--cyan-dim);
+      text-shadow: none;
+    }
+
+    .chain-arrow {
+      color: var(--cyan);
+      font-size: 1rem;
+      margin: 0 6px;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.5) translateY(-6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ── Progress Bar ── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan-dim), var(--cyan));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    .progress-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .score-display {
+      font-size: 0.82rem;
+      color: var(--cyan);
+      letter-spacing: 1px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* ── Round Card ── */
+    .round-card {
+      width: 100%;
+      max-width: 860px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px 36px;
+      position: relative;
+    }
+
+    .round-number {
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .rule-banner {
+      display: inline-block;
+      background: var(--cyan-glow);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 30px;
+      margin-bottom: 22px;
+    }
+
+    .prompt-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .prompt-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .prev-word-chip {
+      background: var(--surface2);
+      border: 2px solid var(--cyan);
+      color: var(--cyan);
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      padding: 8px 22px;
+      border-radius: 12px;
+      text-shadow: 0 0 14px var(--cyan);
+    }
+
+    .rule-text {
+      font-size: 1rem;
+      color: var(--text);
+      font-style: italic;
+      opacity: 0.9;
+    }
+
+    /* ── Choices Grid ── */
+    .choices-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 500px) {
+      .choices-grid { grid-template-columns: 1fr; }
+      .round-card { padding: 22px 18px; }
+    }
+
+    .choice-btn {
+      background: var(--surface2);
+      border: 2px solid rgba(0, 245, 255, 0.15);
+      color: var(--text);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 18px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--cyan);
+      background: var(--cyan-glow);
+      box-shadow: 0 0 18px var(--cyan-glow);
+      transform: translateY(-2px);
+    }
+
+    .choice-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .choice-btn:disabled {
+      cursor: default;
+    }
+
+    .choice-btn.correct {
+      border-color: var(--green);
+      background: rgba(0, 255, 136, 0.12);
+      color: var(--green);
+      box-shadow: 0 0 22px rgba(0, 255, 136, 0.3);
+      animation: flashGreen 0.4s ease;
+    }
+
+    .choice-btn.wrong {
+      border-color: var(--red);
+      background: rgba(255, 56, 96, 0.1);
+      color: var(--red);
+      animation: flashRed 0.4s ease;
+    }
+
+    .choice-btn.reveal-correct {
+      border-color: var(--green);
+      background: rgba(0, 255, 136, 0.08);
+      color: var(--green);
+      opacity: 0.7;
+    }
+
+    @keyframes flashGreen {
+      0%   { background: rgba(0, 255, 136, 0.45); }
+      100% { background: rgba(0, 255, 136, 0.12); }
+    }
+
+    @keyframes flashRed {
+      0%   { background: rgba(255, 56, 96, 0.45); }
+      100% { background: rgba(255, 56, 96, 0.1); }
+    }
+
+    /* ── Feedback ── */
+    .feedback-area {
+      margin-top: 22px;
+      min-height: 52px;
+    }
+
+    .feedback-box {
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      display: block;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--green);
+    }
+
+    .feedback-box.wrong {
+      display: block;
+      background: rgba(255, 56, 96, 0.08);
+      border: 1px solid rgba(255, 56, 96, 0.3);
+      color: #ff7090;
+    }
+
+    .feedback-icon {
+      font-size: 1.1rem;
+      margin-right: 6px;
+    }
+
+    /* ── Next Button ── */
+    .next-btn {
+      margin-top: 22px;
+      background: transparent;
+      border: 2px solid var(--cyan);
+      color: var(--cyan);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 12px 32px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      display: none;
+    }
+
+    .next-btn:hover {
+      background: var(--cyan-glow);
+      box-shadow: 0 0 18px var(--cyan-glow);
+    }
+
+    /* ── End Screen ── */
+    #end-screen {
+      display: none;
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+    }
+
+    .end-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 50px 40px;
+    }
+
+    .end-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--cyan);
+      text-shadow: 0 0 24px var(--cyan);
+      margin-bottom: 10px;
+    }
+
+    .end-rank {
+      font-size: 1.05rem;
+      color: var(--text);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      opacity: 0.85;
+    }
+
+    .end-score-big {
+      font-size: 5rem;
+      font-weight: 900;
+      color: var(--cyan);
+      line-height: 1;
+      text-shadow: 0 0 30px var(--cyan);
+      margin-bottom: 6px;
+    }
+
+    .end-score-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-bottom: 36px;
+    }
+
+    .final-chain {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 36px;
+      padding: 16px;
+      background: var(--surface2);
+      border-radius: 12px;
+    }
+
+    .final-chain-node {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .final-word {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 16px;
+      text-transform: uppercase;
+    }
+
+    .final-word.hit {
+      background: rgba(0, 255, 136, 0.12);
+      border: 1px solid rgba(0, 255, 136, 0.4);
+      color: var(--green);
+    }
+
+    .final-word.miss {
+      background: rgba(255, 56, 96, 0.1);
+      border: 1px solid rgba(255, 56, 96, 0.3);
+      color: var(--red);
+    }
+
+    .final-word.start {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .final-arrow {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin: 0 3px;
+    }
+
+    .end-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-restart {
+      background: var(--cyan);
+      color: var(--bg);
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 13px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 20px var(--cyan-glow);
+    }
+
+    .btn-restart:hover { opacity: 0.85; }
+
+    .btn-hub {
+      background: transparent;
+      border: 2px solid var(--muted);
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 13px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-hub:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ── Intro Screen ── */
+    #intro-screen {
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+    }
+
+    .intro-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 50px 40px;
+    }
+
+    .intro-title {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: var(--cyan);
+      text-shadow: 0 0 30px var(--cyan);
+      margin-bottom: 12px;
+    }
+
+    .intro-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-bottom: 32px;
+    }
+
+    .rules-list {
+      text-align: left;
+      display: inline-block;
+      list-style: none;
+      margin-bottom: 36px;
+    }
+
+    .rules-list li {
+      padding: 7px 0;
+      color: var(--text);
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+    }
+
+    .rules-list li::before {
+      content: '▸ ';
+      color: var(--cyan);
+    }
+
+    .btn-start {
+      background: var(--cyan);
+      color: var(--bg);
+      border: none;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 15px 44px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 24px var(--cyan-glow);
+    }
+
+    .btn-start:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="game-title">⛓ Chain Gang</div>
+  <a class="hub-link" href="index.html">← Back to Hub</a>
+</header>
+
+<!-- ── Chain Track ── -->
+<div class="chain-track" id="chain-track">
+  <span class="chain-empty" id="chain-placeholder">The chain starts here…</span>
+</div>
+
+<!-- ── Progress ── -->
+<div class="progress-wrap" id="progress-wrap" style="display:none">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="round-label">Round 1 / 10</div>
+  <div class="score-display" id="score-label">Score: 0</div>
+</div>
+
+<!-- ── Intro ── -->
+<div id="intro-screen">
+  <div class="intro-card">
+    <div class="intro-title">CHAIN GANG</div>
+    <div class="intro-sub">10 rounds. One unbroken chain. Can you link them all?</div>
+    <ul class="rules-list">
+      <li>Each round shows the previous word and a rule</li>
+      <li>Pick the answer that fits the rule AND continues the chain</li>
+      <li>The correct answer becomes the next "previous word"</li>
+      <li>Score 1 point per correct pick — aim for Chain Master!</li>
+    </ul>
+    <button class="btn-start" onclick="startGame()">Start the Chain</button>
+  </div>
+</div>
+
+<!-- ── Game Screen ── -->
+<div id="game-screen" style="display:none; width:100%; max-width:860px;">
+  <div class="round-card">
+    <div class="round-number" id="round-number">Round 1 of 10</div>
+    <div class="rule-banner" id="rule-banner">Rule</div>
+
+    <div class="prompt-row">
+      <div class="prompt-label">Previous word</div>
+      <div class="prev-word-chip" id="prev-word-chip">OCEAN</div>
+      <div class="rule-text" id="rule-text"></div>
+    </div>
+
+    <div class="choices-grid" id="choices-grid"></div>
+
+    <div class="feedback-area">
+      <div class="feedback-box" id="feedback-box"></div>
+    </div>
+
+    <button class="next-btn" id="next-btn" onclick="nextRound()">
+      Next Round →
+    </button>
+  </div>
+</div>
+
+<!-- ── End Screen ── -->
+<div id="end-screen">
+  <div class="end-card">
+    <div class="end-title" id="end-title">CHAIN MASTER</div>
+    <div class="end-rank" id="end-rank">You forged the perfect chain</div>
+    <div class="end-score-big" id="end-score">10</div>
+    <div class="end-score-label">out of 10</div>
+    <div class="final-chain" id="final-chain"></div>
+    <div class="end-actions">
+      <button class="btn-restart" onclick="restartGame()">Play Again</button>
+      <a class="btn-hub" href="index.html">Back to Hub</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Data ────────────────────────────────────────────────────────────────────
+  const ROUNDS = [
+    {
+      prevWord: "OCEAN",
+      rule: "Rhymes with it",
+      ruleShort: "Rhymes with OCEAN",
+      correct: "MOTION",
+      wrong: ["RIVER", "DESERT", "CLOUD"],
+      explanation: "MOTION rhymes with OCEAN — both end in the \"-tion\" / \"-cean\" sound."
+    },
+    {
+      prevWord: "MOTION",
+      rule: "Starts with the last letter of it",
+      ruleShort: "Starts with N (last letter of MOTION)",
+      correct: "NIGHT",
+      wrong: ["MOON", "PLANET", "DARK"],
+      explanation: "MOTION ends in N, and NIGHT starts with N."
+    },
+    {
+      prevWord: "NIGHT",
+      rule: "Is a type of it",
+      ruleShort: "Is a type of NIGHT",
+      correct: "MIDNIGHT",
+      wrong: ["SUNSHINE", "BREAKFAST", "WEEKEND"],
+      explanation: "MIDNIGHT is a specific type of night — the middle of the night."
+    },
+    {
+      prevWord: "MIDNIGHT",
+      rule: "Is the opposite of it",
+      ruleShort: "Is the opposite of MIDNIGHT",
+      correct: "NOON",
+      wrong: ["EVENING", "DUSK", "TWILIGHT"],
+      explanation: "NOON (12:00 PM) is the direct opposite of MIDNIGHT (12:00 AM)."
+    },
+    {
+      prevWord: "NOON",
+      rule: "Shares a category with it",
+      ruleShort: "Same category as NOON (times of day)",
+      correct: "DAWN",
+      wrong: ["MONDAY", "JANUARY", "WINTER"],
+      explanation: "DAWN is a time of day, sharing the same category as NOON."
+    },
+    {
+      prevWord: "DAWN",
+      rule: "Contains it as a hidden word inside it",
+      ruleShort: "Contains DAWN hidden inside",
+      correct: "DAWNING",
+      wrong: ["SUNRISE", "DAYBREAK", "MORNING"],
+      explanation: "DAWNING literally contains the word DAWN at its start — D-A-W-N-ing."
+    },
+    {
+      prevWord: "DAWNING",
+      rule: "Is famously associated with it",
+      ruleShort: "Famously associated with DAWNING",
+      correct: "NEW DAY",
+      wrong: ["BEDTIME", "THUNDER", "WINTER"],
+      explanation: "A dawning is famously associated with the start of a NEW DAY — the classic phrase 'the dawning of a new day.'"
+    },
+    {
+      prevWord: "NEW DAY",
+      rule: "Is a synonym of it",
+      ruleShort: "Synonym of NEW DAY",
+      correct: "FRESH START",
+      wrong: ["OLD HABIT", "DEAD END", "LAST CHANCE"],
+      explanation: "FRESH START is a synonym for NEW DAY — both capture the idea of beginning again."
+    },
+    {
+      prevWord: "FRESH START",
+      rule: "Is famously associated with it",
+      ruleShort: "Famously associated with FRESH START",
+      correct: "NEW YEAR",
+      wrong: ["BIRTHDAY", "MONDAY", "VACATION"],
+      explanation: "NEW YEAR is the most famous occasion people associate with getting a FRESH START."
+    },
+    {
+      prevWord: "NEW YEAR",
+      rule: "Rhymes with it",
+      ruleShort: "Rhymes with NEW YEAR",
+      correct: "FRONTIER",
+      wrong: ["FUTURE", "JANUARY", "CALENDAR"],
+      explanation: "FRONTIER rhymes with NEW YEAR — both end in the \"-eer\" / \"-ear\" sound."
+    }
+  ];
+
+  // ── State ────────────────────────────────────────────────────────────────────
+  let currentRound = 0;
+  let score = 0;
+  let answered = false;
+  let chainWords = []; // { word, correct } — starts with "OCEAN" as anchor
+  let roundResults = []; // true/false per round
+
+  // ── Shuffle util ─────────────────────────────────────────────────────────────
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  function startGame() {
+    currentRound = 0;
+    score = 0;
+    answered = false;
+    chainWords = [];
+    roundResults = [];
+
+    document.getElementById('intro-screen').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    document.getElementById('progress-wrap').style.display = 'flex';
+
+    // Plant the start word anchor
+    addWordToChain("OCEAN", null); // null = starting anchor
+
+    renderRound();
+  }
+
+  function restartGame() {
+    document.getElementById('end-screen').style.display = 'none';
+    document.getElementById('chain-track').innerHTML = '<span class="chain-empty" id="chain-placeholder">The chain starts here…</span>';
+    startGame();
+  }
+
+  // ── Render Round ─────────────────────────────────────────────────────────────
+  function renderRound() {
+    const rd = ROUNDS[currentRound];
+    answered = false;
+
+    // Progress
+    const pct = (currentRound / 10) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('round-label').textContent = `Round ${currentRound + 1} / 10`;
+    document.getElementById('score-label').textContent = `Score: ${score}`;
+    document.getElementById('round-number').textContent = `Round ${currentRound + 1} of 10`;
+
+    // Rule
+    document.getElementById('rule-banner').textContent = `Rule: ${rd.rule}`;
+    document.getElementById('rule-text').textContent = `"${rd.ruleShort}"`;
+
+    // Prev word
+    document.getElementById('prev-word-chip').textContent = rd.prevWord;
+
+    // Choices
+    const choices = shuffle([rd.correct, ...rd.wrong]);
+    const grid = document.getElementById('choices-grid');
+    grid.innerHTML = '';
+    choices.forEach(word => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = word;
+      btn.onclick = () => handleChoice(word, btn);
+      grid.appendChild(btn);
+    });
+
+    // Reset feedback
+    const fb = document.getElementById('feedback-box');
+    fb.className = 'feedback-box';
+    fb.innerHTML = '';
+
+    document.getElementById('next-btn').style.display = 'none';
+  }
+
+  // ── Handle Choice ─────────────────────────────────────────────────────────────
+  function handleChoice(word, clickedBtn) {
+    if (answered) return;
+    answered = true;
+
+    const rd = ROUNDS[currentRound];
+    const isCorrect = word === rd.correct;
+
+    // Disable all buttons
+    const allBtns = document.querySelectorAll('.choice-btn');
+    allBtns.forEach(btn => {
+      btn.disabled = true;
+      if (btn.textContent === rd.correct && btn !== clickedBtn) {
+        btn.classList.add('reveal-correct');
+      }
+    });
+
+    if (isCorrect) {
+      score++;
+      clickedBtn.classList.add('correct');
+      roundResults.push(true);
+      addWordToChain(rd.correct, true);
+      showFeedback(true, `Correct! ${rd.explanation}`);
+    } else {
+      clickedBtn.classList.add('wrong');
+      roundResults.push(false);
+      addWordToChain(rd.correct, false); // still add to chain but marked missed
+      showFeedback(false, `Not quite. The answer was "${rd.correct}". ${rd.explanation}`);
+    }
+
+    // Update score display
+    document.getElementById('score-label').textContent = `Score: ${score}`;
+
+    // Show next / finish button
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.style.display = 'block';
+    if (currentRound === ROUNDS.length - 1) {
+      nextBtn.textContent = 'See Results →';
+    } else {
+      nextBtn.textContent = 'Next Round →';
+    }
+  }
+
+  function showFeedback(isCorrect, msg) {
+    const fb = document.getElementById('feedback-box');
+    const icon = isCorrect ? '✓' : '✗';
+    fb.innerHTML = `<span class="feedback-icon">${icon}</span>${msg}`;
+    fb.className = 'feedback-box ' + (isCorrect ? 'correct' : 'wrong');
+  }
+
+  // ── Next Round ───────────────────────────────────────────────────────────────
+  function nextRound() {
+    currentRound++;
+    if (currentRound >= ROUNDS.length) {
+      showEndScreen();
+    } else {
+      renderRound();
+    }
+  }
+
+  // ── Chain Visual ─────────────────────────────────────────────────────────────
+  function addWordToChain(word, correct) {
+    const track = document.getElementById('chain-track');
+
+    // Remove placeholder if present
+    const ph = document.getElementById('chain-placeholder');
+    if (ph) ph.remove();
+
+    // Arrow (not before first node)
+    if (chainWords.length > 0) {
+      const arrow = document.createElement('span');
+      arrow.className = 'chain-arrow';
+      arrow.textContent = '→';
+      track.appendChild(arrow);
+    }
+
+    // Node
+    const node = document.createElement('div');
+    node.className = 'chain-node';
+
+    const chip = document.createElement('span');
+    chip.className = 'chain-word';
+    if (correct === null) {
+      chip.classList.add('start-word');
+    } else if (!correct) {
+      chip.style.borderColor = 'var(--red)';
+      chip.style.color = 'var(--red)';
+      chip.style.textShadow = '0 0 8px rgba(255,56,96,0.5)';
+    }
+    chip.textContent = word;
+
+    node.appendChild(chip);
+    track.appendChild(node);
+    chainWords.push({ word, correct });
+
+    // Scroll to end
+    requestAnimationFrame(() => {
+      track.scrollLeft = track.scrollWidth;
+    });
+  }
+
+  // ── End Screen ───────────────────────────────────────────────────────────────
+  function showEndScreen() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'none';
+
+    // Rank
+    let title, rank;
+    if (score === 10) {
+      title = 'CHAIN MASTER';
+      rank = 'You forged the perfect, unbreakable chain!';
+    } else if (score >= 8) {
+      title = 'LINK LEGEND';
+      rank = 'Almost flawless — a near-perfect chain!';
+    } else if (score >= 6) {
+      title = 'SOLID CHAIN';
+      rank = 'A strong chain with just a few weak links.';
+    } else {
+      title = 'WEAK LINKS';
+      rank = 'The chain broke a few times — try again!';
+    }
+
+    document.getElementById('end-title').textContent = title;
+    document.getElementById('end-rank').textContent = rank;
+    document.getElementById('end-score').textContent = score;
+
+    // Final chain display
+    const fc = document.getElementById('final-chain');
+    fc.innerHTML = '';
+
+    // Start anchor
+    const startNode = document.createElement('div');
+    startNode.className = 'final-chain-node';
+    startNode.innerHTML = `<span class="final-word start">OCEAN</span>`;
+    fc.appendChild(startNode);
+
+    ROUNDS.forEach((rd, i) => {
+      const arrow = document.createElement('span');
+      arrow.className = 'final-arrow';
+      arrow.textContent = '→';
+      fc.appendChild(arrow);
+
+      const node = document.createElement('div');
+      node.className = 'final-chain-node';
+      const cls = roundResults[i] ? 'hit' : 'miss';
+      node.innerHTML = `<span class="final-word ${cls}">${rd.correct}</span>`;
+      fc.appendChild(node);
+    });
+
+    document.getElementById('end-screen').style.display = 'block';
+    // Fill progress bar to 100%
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('progress-wrap').style.display = 'flex';
+    document.getElementById('round-label').textContent = 'Round 10 / 10';
+    document.getElementById('score-label').textContent = `Score: ${score}`;
+  }
+</script>
+</body>
+</html>

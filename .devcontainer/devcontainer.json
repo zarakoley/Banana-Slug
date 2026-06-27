@@ -1,0 +1,25 @@
+{
+  "name": "AI Agent Camp — Claude Code",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "onCreateCommand": "pip install requests python-dotenv watchdog resend schedule --break-system-packages && npm install -g @anthropic-ai/claude-code@latest && echo '✅ Claude Code ready — type: claude'",
+  "postStartCommand": "echo '👋 Welcome to AI Agent Camp!'",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.fontSize": 15,
+        "editor.fontSize": 14,
+        "editor.wordWrap": "on",
+        "workbench.colorTheme": "Default Dark Modern",
+        "files.autoSave": "afterDelay"
+      }
+    },
+    "codespaces": {
+      "openFiles": ["CLAUDE.md"]
+    }
+  },
+  "remoteUser": "vscode"
+}

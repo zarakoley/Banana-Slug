@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Daily Edition</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #111; --ink-mid: #333; --ink-light: #666;
+      --rule-light: #ccc; --bg: #faf8f2; --col-bg: #fff;
+      --red: #c0392b; --green: #1a7a3c; --blue: #1a4a7a;
+    }
+    html { font-size: 16px; background: var(--bg); }
+    body { font-family: Georgia,'Times New Roman',serif; color: var(--ink); max-width: 1300px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+    /* ── MASTHEAD ── */
+    .masthead { text-align: center; border-bottom: 4px solid var(--ink); padding: 2rem 0 0.75rem; }
+    .masthead-top { display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-light); padding-bottom: .5rem; border-bottom: 1px solid var(--ink); margin-bottom: .5rem; }
+    .masthead h1 { font-size: clamp(2.8rem,7vw,5.5rem); font-weight: 900; letter-spacing: -.01em; line-height: 1; text-transform: uppercase; }
+    .masthead-tagline { font-style: italic; font-size: .88rem; color: var(--ink-light); margin-top: .35rem; letter-spacing: .04em; }
+    .index-bar { display: flex; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); margin: .5rem 0 0; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; overflow-x: auto; }
+    .index-item { flex:1; min-width:120px; padding: .45rem .6rem; border-right: 1px solid var(--ink); line-height: 1.4; }
+    .index-item:last-child { border-right: none; }
+    .index-item .idx-label { font-weight: 700; color: var(--red); display: block; margin-bottom: .15rem; }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; margin-top: 1.5rem; align-items: flex-start; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: 200px; flex-shrink: 0; border-right: 2px solid var(--ink); padding-right: 1.25rem; position: sticky; top: 1rem; }
+    .sidebar-label { font-size: .65rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; border-bottom: 2px solid var(--ink); padding-bottom: .5rem; margin-bottom: .75rem; }
+    .topic-btn { display: block; width: 100%; text-align: left; background: none; border: none; padding: .5rem .7rem; font-size: .85rem; font-family: Georgia,serif; color: var(--ink-mid); cursor: pointer; border-left: 3px solid transparent; transition: all .15s; margin-bottom: .1rem; }
+    .topic-btn:hover { color: var(--ink); background: #f0ede4; border-left-color: var(--rule-light); }
+    .topic-btn.active { color: var(--ink); font-weight: 700; border-left-color: var(--red); background: #f0ede4; }
+    .sport-sub-nav { padding-left: .5rem; }
+    .sport-sub-btn { display: block; width: 100%; text-align: left; background: none; border: none; padding: .38rem .6rem; font-size: .8rem; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--ink-mid); cursor: pointer; border-left: 2px solid transparent; transition: all .15s; }
+    .sport-sub-btn:hover { color: var(--ink); background: #f0ede4; border-left-color: var(--rule-light); }
+    .sport-sub-btn.active { color: var(--ink); font-weight: 700; border-left-color: var(--red); background: #f0ede4; }
+
+    /* ── MAIN ── */
+    .main-content { flex: 1; min-width: 0; padding-left: 1.5rem; border-top: 2px solid var(--ink); }
+
+    /* ── ARTICLES ── */
+    .page { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    /* featured (front page) — all visible in grid */
+    .article { padding: 1.25rem 1.5rem 1.5rem; border-right: 1px solid var(--rule-light); display: block; }
+    .article:last-of-type { border-right: none; }
+    /* topic article — single full-width */
+    .article.topic-view { display: none; }
+    .article.topic-view.active { display: block; grid-column: 1 / -1; border-right: none; max-width: 720px; }
+    .article-section { font-size: .65rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--red); display: block; margin-bottom: .6rem; font-family: 'Helvetica Neue',Arial,sans-serif; }
+    .article-headline { font-size: clamp(1.1rem,2vw,1.6rem); font-weight: 900; line-height: 1.15; margin-bottom: .5rem; }
+    .article-subheadline { font-size: .88rem; font-style: italic; color: var(--ink-mid); line-height: 1.45; margin-bottom: .7rem; border-bottom: 1px solid var(--rule-light); padding-bottom: .7rem; }
+    .article-byline { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-light); margin-bottom: .9rem; font-family: 'Helvetica Neue',Arial,sans-serif; }
+    .article-body p { font-size: .92rem; line-height: 1.7; margin-bottom: .85rem; text-align: justify; hyphens: auto; }
+    .article-body p:last-child { margin-bottom: 0; }
+    .article-body p:first-child::first-letter { float: left; font-size: 3.6rem; line-height: .78; margin: .1rem .22rem 0 0; font-weight: 900; }
+
+    /* ── ARCHIVE ── */
+    #archive-view { display: none; }
+    .archive-header { padding: 1.25rem 0 .75rem; border-bottom: 1px solid var(--rule-light); margin-bottom: 1rem; }
+    .archive-header h2 { font-size: 1.4rem; font-weight: 900; }
+    .archive-header p { font-size: .8rem; color: var(--ink-light); font-family: 'Helvetica Neue',Arial,sans-serif; text-transform: uppercase; letter-spacing: .06em; margin-top: .3rem; }
+    .archive-item { border-bottom: 1px solid var(--rule-light); padding: 1rem 0 1rem .75rem; cursor: pointer; border-left: 3px solid transparent; transition: all .15s; }
+    .archive-item:hover { background: #f0ede4; border-left-color: var(--red); padding-left: 1rem; }
+    .archive-item-date { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-light); font-family: 'Helvetica Neue',Arial,sans-serif; margin-bottom: .3rem; }
+    .archive-item-section { font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--red); font-family: 'Helvetica Neue',Arial,sans-serif; margin-bottom: .25rem; }
+    .archive-item-headline { font-size: 1.05rem; font-weight: 700; line-height: 1.2; margin-bottom: .3rem; }
+    .archive-item-sub { font-size: .83rem; font-style: italic; color: var(--ink-mid); line-height: 1.4; }
+    .archive-full { background: var(--col-bg); border: 1px solid var(--rule-light); padding: 1.5rem; margin-top: .5rem; display: none; }
+    .archive-full p { font-size: .9rem; line-height: 1.7; margin-bottom: .8rem; }
+    .archive-empty { padding: 3rem 1rem; text-align: center; font-style: italic; color: var(--ink-light); }
+
+    /* ── SPORTS HUB ── */
+    #sports-view { display: none; }
+
+    .sports-hub-header {
+      padding: 1.25rem 0 0;
+      border-bottom: 3px solid var(--ink);
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .sports-hub-emoji { font-size: 2rem; line-height: 1; }
+    .sports-hub-title { font-size: 1.6rem; font-weight: 900; font-family: Georgia,serif; text-transform: uppercase; letter-spacing: -.01em; }
+    .sports-hub-meta { font-size: .72rem; color: var(--ink-light); font-family: 'Helvetica Neue',Arial,sans-serif; text-transform: uppercase; letter-spacing: .08em; margin-top: .15rem; }
+
+    /* TAB BAR */
+    .sport-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--rule-light);
+      margin-bottom: 0;
+    }
+    .sport-tab {
+      padding: .7rem 1.4rem;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: 'Helvetica Neue',Arial,sans-serif;
+      color: var(--ink-light);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: all .15s;
+      margin-bottom: -2px;
+    }
+    .sport-tab:hover { color: var(--ink); }
+    .sport-tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+    .sport-tab-panel { display: none; padding: 1.25rem 0; }
+    .sport-tab-panel.active { display: block; }
+
+    /* OFF SEASON */
+    .off-season {
+      padding: 3rem 1rem;
+      text-align: center;
+    }
+    .off-season-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .off-season h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .4rem; }
+    .off-season p { font-size: .88rem; color: var(--ink-light); font-style: italic; }
+
+    /* SCORES TABLE */
+    .scores-table { width: 100%; border-collapse: collapse; }
+    .scores-table thead tr { border-bottom: 2px solid var(--ink); }
+    .scores-table tbody tr { border-bottom: 1px solid var(--rule-light); }
+    .scores-table tbody tr:last-child { border-bottom: none; }
+    .scores-table th { font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--ink-light); padding: .5rem .5rem; text-align: left; }
+    .scores-table th.num { text-align: right; }
+    .scores-table td { padding: .6rem .5rem; vertical-align: middle; }
+
+    .game-matchup { display: flex; flex-direction: column; gap: .2rem; }
+    .game-team-row { display: flex; justify-content: space-between; align-items: center; }
+    .game-team { font-size: .9rem; font-family: 'Helvetica Neue',Arial,sans-serif; }
+    .game-team.winner { font-weight: 700; }
+    .game-score { font-size: 1rem; font-weight: 700; font-family: 'Helvetica Neue',Arial,sans-serif; min-width: 2rem; text-align: right; }
+    .game-score.winner { color: var(--green); }
+
+    .game-status { font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; white-space: nowrap; padding-left: 1rem; text-align: right; min-width: 90px; }
+    .status-final { color: var(--ink-light); }
+    .status-live { color: var(--red); }
+    .status-upcoming { color: var(--blue); }
+
+    /* STANDINGS TABLE */
+    .standings-table { width: 100%; border-collapse: collapse; }
+    .standings-table thead tr { border-bottom: 2px solid var(--ink); }
+    .standings-table tbody tr { border-bottom: 1px solid var(--rule-light); transition: background .1s; }
+    .standings-table tbody tr:hover { background: #f0ede4; }
+    .standings-table th { font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--ink-light); padding: .5rem .5rem; text-align: center; }
+    .standings-table th.left { text-align: left; }
+    .standings-table td { font-size: .88rem; font-family: 'Helvetica Neue',Arial,sans-serif; padding: .6rem .5rem; text-align: center; vertical-align: middle; }
+    .standings-table td.left { text-align: left; }
+    .std-rank { font-size: .75rem; color: var(--ink-light); font-weight: 700; width: 28px; }
+    .std-team { font-weight: 600; text-align: left; }
+    .std-team .team-conf { font-size: .7rem; color: var(--ink-light); font-weight: 400; display: block; }
+    .std-pts { font-weight: 700; }
+    .std-highlight { background: #f5f2ea !important; }
+    .conf-header td { font-size: .62rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--red); padding: .9rem .5rem .3rem; border-bottom: 1px solid var(--rule-light); }
+
+    /* TOP PLAYERS */
+    .players-list { display: flex; flex-direction: column; gap: 0; }
+    .player-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: .85rem 0; border-bottom: 1px solid var(--rule-light);
+      transition: background .1s; cursor: default;
+    }
+    .player-row:last-child { border-bottom: none; }
+    .player-row:hover { background: #f0ede4; padding-left: .5rem; }
+    .player-rank { font-size: .85rem; font-weight: 700; color: var(--ink-light); font-family: 'Helvetica Neue',Arial,sans-serif; min-width: 1.5rem; text-align: center; }
+    .player-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--ink); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 700; font-family: 'Helvetica Neue',Arial,sans-serif;
+      flex-shrink: 0; letter-spacing: .02em;
+    }
+    .player-info { flex: 1; min-width: 0; }
+    .player-name { font-size: .95rem; font-weight: 700; font-family: 'Helvetica Neue',Arial,sans-serif; }
+    .player-team { font-size: .75rem; color: var(--ink-light); font-family: 'Helvetica Neue',Arial,sans-serif; margin-top: .1rem; }
+    .player-stat-box { text-align: right; flex-shrink: 0; }
+    .player-stat-val { font-size: 1.5rem; font-weight: 900; font-family: 'Helvetica Neue',Arial,sans-serif; line-height: 1; color: var(--ink); }
+    .player-stat-label { font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--ink-light); margin-top: .1rem; }
+
+    /* ── SECTION RULE ── */
+    .section-rule { border: none; border-top: 2px solid var(--ink); margin: 2rem 0 0; }
+    .section-label { font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; font-weight: 700; background: var(--bg); display: inline-block; padding: .4rem .75rem .4rem 0; margin-top: -.05rem; }
+
+    /* ── GAMES ── */
+    .games-section { margin-top: .5rem; padding: 1rem 0; }
+    .games-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 1rem; }
+    .game-card { border: 1px solid var(--rule-light); padding: 1rem; text-decoration: none; color: var(--ink); display: block; transition: border-color .2s,background .2s; background: var(--col-bg); }
+    .game-card:hover { border-color: var(--ink); background: #f0ede4; }
+    .game-emoji { font-size: 1.6rem; line-height: 1; margin-bottom: .5rem; display: block; }
+    .game-name { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-family: 'Helvetica Neue',Arial,sans-serif; margin-bottom: .35rem; }
+    .game-desc { font-size: .8rem; line-height: 1.5; color: var(--ink-light); font-style: italic; }
+    .game-play-btn { display: inline-block; margin-top: .65rem; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--red); border-bottom: 1px solid var(--red); }
+
+    /* ── TOPIC REQUEST ── */
+    .request-section { margin-top: .5rem; padding: 1rem 0 2rem; }
+    .request-box { border: 2px solid var(--ink); padding: 2rem; background: var(--col-bg); max-width: 640px; }
+    .request-box h2 { font-size: 1.3rem; font-weight: 900; margin-bottom: .3rem; }
+    .request-box p { font-size: .85rem; color: var(--ink-mid); font-style: italic; margin-bottom: 1.2rem; }
+    .request-row { display: flex; gap: .75rem; flex-wrap: wrap; }
+    .request-input { flex: 1; min-width: 200px; border: 1px solid var(--ink); padding: .65rem .85rem; font-size: .9rem; font-family: Georgia,serif; background: var(--bg); color: var(--ink); outline: none; }
+    .request-input:focus { border-color: var(--red); background: #fff; }
+    .request-btn { background: var(--ink); color: #fff; border: none; padding: .65rem 1.4rem; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; cursor: pointer; transition: background .15s; }
+    .request-btn:hover { background: var(--red); }
+    .request-status { margin-top: .9rem; font-size: .82rem; font-family: 'Helvetica Neue',Arial,sans-serif; min-height: 1.2em; color: var(--red); }
+
+    /* ── FOOTER ── */
+    .footer { margin-top: 3rem; border-top: 2px solid var(--ink); padding-top: .75rem; display: flex; justify-content: space-between; align-items: center; font-size: .72rem; letter-spacing: .05em; color: var(--ink-light); font-family: 'Helvetica Neue',Arial,sans-serif; text-transform: uppercase; }
+
+    .state-msg { text-align: center; padding: 4rem 2rem; font-style: italic; color: var(--ink-light); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; position: static; border-right: none; border-bottom: 2px solid var(--ink); padding-right: 0; padding-bottom: .75rem; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+      .sidebar-label { width: 100%; margin-bottom: .4rem; }
+      .topic-btn { display: inline-block; width: auto; border: 1px solid var(--rule-light); border-left: 3px solid transparent; border-radius: 2px; padding: .3rem .7rem; font-size: .78rem; }
+      .topic-btn.active { border-left-color: var(--red); }
+      .sport-sub-nav { display: contents; }
+      .sport-sub-btn { display: inline-block; width: auto; border: 1px solid var(--rule-light); border-left: 2px solid transparent; border-radius: 2px; padding: .25rem .6rem; font-size: .72rem; }
+      .main-content { padding-left: 0; border-top: none; }
+      .page { grid-template-columns: 1fr; }
+      .article { border-right: none !important; border-bottom: 1px solid var(--rule-light); }
+      .games-grid { grid-template-columns: repeat(2,1fr); }
+      .sport-tab { padding: .6rem .9rem; font-size: .7rem; }
+    }
+    @media (max-width: 480px) {
+      .games-grid { grid-template-columns: 1fr; }
+      .standings-table .hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="masthead">
+    <div class="masthead-top">
+      <span id="meta-date">Loading…</span>
+      <span>Vol. 1 · No. <span id="meta-edition">1</span></span>
+      <span>thedailyedition.news</span>
+    </div>
+    <h1>The Daily Edition</h1>
+    <p class="masthead-tagline">"All the news that's fit to read."</p>
+    <nav class="index-bar" id="index-bar"></nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-label">Browse Topics</div>
+      <nav id="topics-nav">
+        <button class="topic-btn active" data-topic="all">📰 Today's Paper</button>
+        <button class="topic-btn" data-topic="WORLD">🌍 World</button>
+        <button class="topic-btn" data-topic="SPACE">🔭 Space</button>
+        <button class="topic-btn" data-topic="SCIENCE">🔬 Science</button>
+        <button class="topic-btn" data-topic="NATURE">🌿 Nature</button>
+        <button class="topic-btn" data-topic="TECH">💻 Tech</button>
+        <button class="topic-btn" data-topic="CULTURE">🎭 Culture</button>
+        <button class="topic-btn" data-topic="ANIMALS">🐾 Animals</button>
+        <button class="topic-btn" id="sports-parent-btn" onclick="toggleSports(event)">⚽ Sports ▾</button>
+        <div class="sport-sub-nav" id="sports-sub-nav" style="display:none">
+          <button class="sport-sub-btn" onclick="showSport('soccer',this)">⚽ Soccer</button>
+          <button class="sport-sub-btn" onclick="showSport('football',this)">🏈 Football</button>
+          <button class="sport-sub-btn" onclick="showSport('basketball',this)">🏀 Basketball</button>
+          <button class="sport-sub-btn" onclick="showSport('baseball',this)">⚾ Baseball</button>
+          <button class="sport-sub-btn" onclick="showSport('hockey',this)">🏒 Hockey</button>
+          <button class="sport-sub-btn" onclick="showSport('tennis',this)">🎾 Tennis</button>
+        </div>
+      </nav>
+    </aside>
+
+    <div class="main-content">
+      <main class="page" id="articles-grid">
+        <p class="state-msg" style="grid-column:1/-1">Loading today's edition…</p>
+      </main>
+
+      <section id="archive-view">
+        <div class="archive-header">
+          <h2 id="archive-title"></h2>
+          <p id="archive-count"></p>
+        </div>
+        <div id="archive-list"></div>
+      </section>
+
+      <!-- SPORTS HUB -->
+      <section id="sports-view">
+        <div class="sports-hub-header">
+          <span class="sports-hub-emoji" id="sport-emoji"></span>
+          <div>
+            <div class="sports-hub-title" id="sport-title"></div>
+            <div class="sports-hub-meta" id="sport-meta"></div>
+          </div>
+        </div>
+        <nav class="sport-tabs" id="sport-tabs">
+          <button class="sport-tab active" data-panel="scores" onclick="switchTab('scores',this)">Scores &amp; Schedule</button>
+          <button class="sport-tab" data-panel="standings" onclick="switchTab('standings',this)">Standings</button>
+          <button class="sport-tab" data-panel="players" onclick="switchTab('players',this)">Top Players</button>
+        </nav>
+        <div class="sport-tab-panel active" id="panel-scores"></div>
+        <div class="sport-tab-panel" id="panel-standings"></div>
+        <div class="sport-tab-panel" id="panel-players"></div>
+      </section>
+
+      <hr class="section-rule" />
+      <div class="section-label">Games of the Day</div>
+      <section class="games-section">
+        <div class="games-grid" id="games-grid"></div>
+      </section>
+
+      <hr class="section-rule" />
+      <div class="section-label">Suggest a Topic</div>
+      <section class="request-section">
+        <div class="request-box">
+          <h2>What should we cover next?</h2>
+          <p>Got a topic you want us to write about? Drop it here and we might make it tomorrow's headline.</p>
+          <div class="request-row">
+            <input class="request-input" id="topic-input" type="text" placeholder="e.g. Why do cats knock things over?" maxlength="200" />
+            <button class="request-btn" onclick="submitTopic()">Submit</button>
+          </div>
+          <div class="request-status" id="request-status"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span>The Daily Edition — <span id="footer-date"></span></span>
+    <span>For curious minds aged 10–20</span>
+    <span>thedailyedition.news</span>
+  </footer>
+
+  <script>
+    const GAMES_BASE = 'games/';
+    let todayData = null, archiveData = [], sportsOpen = false;
+
+    const TOPIC_KEYWORDS = {
+      world:   ['WORLD'],
+      space:   ['SPACE','ASTRO','NASA','PLANET','COMET','GALAXY','ORBIT'],
+      science: ['SCIENCE','RESEARCH','STUDY','BIOLOGY','CHEMISTRY','PHYSICS'],
+      nature:  ['NATURE','CONSERVATION','WILDLIFE','ENVIRONMENT','OCEAN','FOREST','CLIMATE'],
+      tech:    ['TECH','AI','ROBOT','DIGITAL','COMPUTER','INTERNET','SOFTWARE'],
+      culture: ['CULTURE','ART','MUSIC','FILM','BOOK','HISTORY','FOOD'],
+      animals: ['ANIMALS','ANIMAL','KOALA','BIRD','FISH','MAMMAL','SPECIES','WILDLIFE'],
+    };
+
+    const SPORT_CONFIG = {
+      soccer:     { keywords:['soccer','football','mls','premier','fifa','euro','copa','mls soccer'], emoji:'⚽', label:'Soccer' },
+      football:   { keywords:['nfl','football','quarterback','nfl football'], emoji:'🏈', label:'Football' },
+      basketball: { keywords:['nba','basketball','wnba','nba basketball','summer league'], emoji:'🏀', label:'Basketball' },
+      baseball:   { keywords:['mlb','baseball','mlb baseball'], emoji:'⚾', label:'Baseball' },
+      hockey:     { keywords:['nhl','hockey','nhl hockey'], emoji:'🏒', label:'Hockey' },
+      tennis:     { keywords:['tennis','atp','wta','wimbledon','us open','french open','australian open'], emoji:'🎾', label:'Tennis' },
+    };
+
+    fetch('newsletter.json')
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(d => { todayData = d; renderToday(d); })
+      .catch(() => {
+        document.getElementById('articles-grid').innerHTML =
+          '<p class="state-msg" style="grid-column:1/-1">Could not load today\'s edition.</p>';
+      });
+
+    fetch('archive/index.json').then(r => r.ok ? r.json() : []).then(d => { archiveData = d; }).catch(() => {});
+
+    function renderToday(d) {
+      document.getElementById('meta-date').textContent = d.date;
+      document.getElementById('meta-edition').textContent = d.edition;
+      document.getElementById('footer-date').textContent = d.date;
+      document.title = `The Daily Edition — ${d.date}`;
+
+      const featured = d.featured || d.articles.slice(0, 3);
+      const topicArticles = d.articles || [];
+
+      document.getElementById('index-bar').innerHTML = featured.map(a => `
+        <div class="index-item"><span class="idx-label">${esc(a.section)}</span><span>${esc(a.headline)}</span></div>`).join('');
+
+      // Featured articles — shown on front page in 3-col grid (no topic-view class)
+      const featuredHtml = featured.map((a, i) => `
+        <article class="article" id="featured-${i}">
+          <span class="article-section">${esc(a.section)}</span>
+          <h2 class="article-headline">${esc(a.headline)}</h2>
+          <p class="article-subheadline">${esc(a.subheadline)}</p>
+          <p class="article-byline">By The Daily Edition Staff &nbsp;|&nbsp; ${esc(d.date)}</p>
+          <div class="article-body">${a.body.split('\n\n').map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+        </article>`).join('');
+
+      // Topic articles — hidden until sidebar click (topic-view class)
+      const topicHtml = topicArticles.map((a, i) => `
+        <article class="article topic-view" id="article-${i}" data-section="${esc(a.section)}">
+          <span class="article-section">${esc(a.section)}</span>
+          <h2 class="article-headline">${esc(a.headline)}</h2>
+          <p class="article-subheadline">${esc(a.subheadline)}</p>
+          <p class="article-byline">By The Daily Edition Staff &nbsp;|&nbsp; ${esc(d.date)}</p>
+          <div class="article-body">${a.body.split('\n\n').map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+        </article>`).join('');
+
+      document.getElementById('articles-grid').innerHTML = featuredHtml + topicHtml;
+
+      document.getElementById('games-grid').innerHTML = (d.games||[]).map(g => `
+        <a class="game-card" href="${GAMES_BASE}${esc(g.file)}" style="border-top:3px solid ${esc(g.accent)}">
+          <span class="game-emoji">${g.emoji}</span>
+          <div class="game-name">${esc(g.name)}</div>
+          <p class="game-desc">${esc(g.desc)}</p>
+          <span class="game-play-btn">Play now →</span>
+        </a>`).join('');
+    }
+
+    // Topic nav
+    document.getElementById('topics-nav').addEventListener('click', e => {
+      const btn = e.target.closest('.topic-btn');
+      if (!btn || btn.id === 'sports-parent-btn') return;
+      setActiveBtn(btn);
+      const t = btn.dataset.topic;
+      if (t === 'all') {
+        showView('today');
+        // restore front page: show featured, hide all topic articles
+        document.querySelectorAll('.article:not(.topic-view)').forEach(a => a.style.display = '');
+        document.querySelectorAll('.article.topic-view').forEach(a => a.classList.remove('active'));
+      } else {
+        showView('today');
+        // hide featured grid, show matching topic article
+        document.querySelectorAll('.article:not(.topic-view)').forEach(a => a.style.display = 'none');
+        const arts = document.querySelectorAll('.article.topic-view');
+        let found = false;
+        arts.forEach(a => {
+          const match = a.dataset.section === t || a.dataset.section.startsWith(t);
+          a.classList.toggle('active', match);
+          if (match) found = true;
+        });
+        if (!found) {
+          document.querySelectorAll('.article:not(.topic-view)').forEach(a => a.style.display = '');
+          showArchiveView(t.toLowerCase(), btn.textContent.trim());
+        }
+      }
+    });
+
+    function setActiveBtn(btn) {
+      document.querySelectorAll('.topic-btn,.sport-sub-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function toggleSports(e) {
+      e.stopPropagation();
+      sportsOpen = !sportsOpen;
+      document.getElementById('sports-sub-nav').style.display = sportsOpen ? '' : 'none';
+      document.getElementById('sports-parent-btn').textContent = `⚽ Sports ${sportsOpen?'▴':'▾'}`;
+      document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('sports-parent-btn').classList.add('active');
+    }
+
+    function showSport(slug, btn) {
+      document.querySelectorAll('.topic-btn,.sport-sub-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('sports-parent-btn').classList.add('active');
+      btn.classList.add('active');
+      renderSportsHub(slug);
+    }
+
+    function renderSportsHub(slug) {
+      showView('sports');
+      switchTab('scores', document.querySelector('.sport-tab[data-panel="scores"]'));
+
+      const cfg = SPORT_CONFIG[slug] || { emoji:'🏅', label: slug };
+      const sports = (todayData && todayData.sports) || [];
+      const kws = cfg.keywords || [slug];
+      const match = sports.find(s => kws.some(kw => s.sport.toLowerCase().includes(kw) || s.slug === slug));
+
+      document.getElementById('sport-emoji').textContent = match ? match.emoji : cfg.emoji;
+      document.getElementById('sport-title').textContent = match ? match.sport : cfg.label;
+      document.getElementById('sport-meta').textContent = todayData ? todayData.date : '';
+
+      const inSeason = match && match.inSeason !== false;
+
+      // ── SCORES PANEL ──
+      if (!inSeason || !match) {
+        document.getElementById('panel-scores').innerHTML = offSeason(cfg.label);
+      } else {
+        const games = match.games || [];
+        document.getElementById('panel-scores').innerHTML = games.length === 0
+          ? '<p style="padding:2rem;font-style:italic;color:var(--ink-light)">No games scheduled today.</p>'
+          : `<table class="scores-table">
+               <thead><tr>
+                 <th>Matchup</th>
+                 <th class="num" style="text-align:right;padding-right:.5rem">Status</th>
+               </tr></thead>
+               <tbody>${games.map(g => gameRow(g)).join('')}</tbody>
+             </table>`;
+      }
+
+      // ── STANDINGS PANEL ──
+      if (!inSeason || !match || !match.standings || !match.standings.length) {
+        document.getElementById('panel-standings').innerHTML = offSeason(cfg.label);
+      } else {
+        document.getElementById('panel-standings').innerHTML = renderStandings(match);
+      }
+
+      // ── PLAYERS PANEL ──
+      if (!inSeason || !match || !match.topPlayers || !match.topPlayers.length) {
+        document.getElementById('panel-players').innerHTML = offSeason(cfg.label);
+      } else {
+        document.getElementById('panel-players').innerHTML = renderPlayers(match.topPlayers);
+      }
+    }
+
+    function switchTab(name, btn) {
+      document.querySelectorAll('.sport-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.sport-tab-panel').forEach(p => p.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const panel = document.getElementById(`panel-${name}`);
+      if (panel) panel.classList.add('active');
+    }
+
+    function offSeason(label) {
+      return `<div class="off-season">
+        <div class="off-season-icon">🏟️</div>
+        <h3>Nothing here right now</h3>
+        <p>${esc(label)} is currently off-season. Check back when play resumes.</p>
+      </div>`;
+    }
+
+    function gameRow(g) {
+      const done = /final/i.test(g.status||'');
+      const live = !done && /q\d|half|\d+'/i.test(g.status||'');
+      const has = g.homeScore != null && g.awayScore != null;
+      const hw = has && g.homeScore > g.awayScore;
+      const aw = has && g.awayScore > g.homeScore;
+      const sc = done ? 'status-final' : live ? 'status-live' : 'status-upcoming';
+      return `<tr>
+        <td>
+          <div class="game-matchup">
+            <div class="game-team-row">
+              <span class="game-team ${aw?'winner':''}">${esc(g.away)}</span>
+              ${has?`<span class="game-score ${aw?'winner':''}">${g.awayScore}</span>`:''}
+            </div>
+            <div class="game-team-row">
+              <span class="game-team ${hw?'winner':''}">${esc(g.home)}</span>
+              ${has?`<span class="game-score ${hw?'winner':''}">${g.homeScore}</span>`:''}
+            </div>
+          </div>
+        </td>
+        <td class="game-status ${sc}">${esc(g.status||'')}</td>
+      </tr>`;
+    }
+
+    function renderStandings(match) {
+      const rows = match.standings || [];
+      const hasDraw = rows.some(r => r.draws != null);
+      const colLabel = rows[0] && rows[0].ptsLabel ? rows[0].ptsLabel : (hasDraw ? 'Pts' : 'Pts');
+
+      let groups = {};
+      rows.forEach(r => {
+        const conf = r.conference || r.division || 'Standings';
+        if (!groups[conf]) groups[conf] = [];
+        groups[conf].push(r);
+      });
+
+      let html = `<table class="standings-table">
+        <thead><tr>
+          <th class="left" style="width:28px">#</th>
+          <th class="left">Team</th>
+          <th>P</th>
+          <th>W</th>
+          ${hasDraw ? '<th class="hide-mobile">D</th>' : ''}
+          <th>L</th>
+          <th class="hide-mobile">${esc(colLabel)}</th>
+          <th>${esc(colLabel)}</th>
+        </tr></thead>
+        <tbody>`;
+
+      const multiGroup = Object.keys(groups).length > 1;
+      Object.entries(groups).forEach(([conf, teamRows]) => {
+        if (multiGroup) {
+          html += `<tr class="conf-header"><td colspan="9">${esc(conf)}</td></tr>`;
+        }
+        teamRows.forEach((r, i) => {
+          html += `<tr>
+            <td class="std-rank">${r.rank || i+1}</td>
+            <td class="std-team left">${esc(r.team)}</td>
+            <td>${r.played ?? r.gp ?? '—'}</td>
+            <td><strong>${r.wins ?? r.w ?? '—'}</strong></td>
+            ${hasDraw ? `<td class="hide-mobile">${r.draws ?? r.d ?? '—'}</td>` : ''}
+            <td>${r.losses ?? r.l ?? '—'}</td>
+            <td class="std-pts hide-mobile">${r.pts ?? r.points ?? r.pct ?? '—'}</td>
+            <td class="std-pts">${r.pts ?? r.points ?? r.pct ?? '—'}</td>
+          </tr>`;
+        });
+      });
+
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function renderPlayers(players) {
+      return `<div class="players-list">${players.map((p, i) => {
+        const initials = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `<div class="player-row">
+          <div class="player-rank">${i+1}</div>
+          <div class="player-avatar" style="background:${avatarColor(p.name)}">${initials}</div>
+          <div class="player-info">
+            <div class="player-name">${esc(p.name)}</div>
+            <div class="player-team">${esc(p.team||'')}</div>
+          </div>
+          <div class="player-stat-box">
+            <div class="player-stat-val">${esc(String(p.value??''))}</div>
+            <div class="player-stat-label">${esc(p.stat||'')}</div>
+          </div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+
+    function avatarColor(name) {
+      const colors = ['#c0392b','#1a4a7a','#1a7a3c','#7a3c1a','#3c1a7a','#1a7a7a','#7a1a4a'];
+      let h = 0; for (let c of name) h = (h*31 + c.charCodeAt(0)) % colors.length;
+      return colors[h];
+    }
+
+    // Archive view
+    function showArchiveView(topic, label) {
+      showView('archive');
+      const matches = [];
+      if (todayData) todayData.articles.forEach(a => { if (topicMatches(a.section,topic)) matches.push({date:todayData.date,...a}); });
+      archiveData.forEach(entry => {
+        if (todayData && entry.date===todayData.date) return;
+        (entry.articles||[]).forEach(a => { if (topicMatches(a.section,topic)) matches.push({date:entry.date,...a}); });
+      });
+      document.getElementById('archive-title').textContent = label;
+      document.getElementById('archive-count').textContent = matches.length === 0 ? 'No articles yet' : `${matches.length} article${matches.length>1?'s':''} found`;
+      if (!matches.length) {
+        document.getElementById('archive-list').innerHTML = '<div class="archive-empty">No articles in this category yet.</div>';
+        return;
+      }
+      document.getElementById('archive-list').innerHTML = matches.map((a,i) => `
+        <div class="archive-item" onclick="toggleArchive(${i})">
+          <div class="archive-item-date">${esc(a.date)}</div>
+          <div class="archive-item-section">${esc(a.section)}</div>
+          <div class="archive-item-headline">${esc(a.headline)}</div>
+          <div class="archive-item-sub">${esc(a.subheadline)}</div>
+          <div class="archive-full" id="af-${i}">${a.body.split('\n\n').map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+        </div>`).join('');
+    }
+
+    function toggleArchive(i) {
+      const el = document.getElementById(`af-${i}`);
+      if (!el) return;
+      const open = el.style.display==='block';
+      document.querySelectorAll('.archive-full').forEach(f=>f.style.display='none');
+      if (!open) el.style.display='block';
+    }
+
+    function topicMatches(section, topic) {
+      const s = section.toUpperCase();
+      return (TOPIC_KEYWORDS[topic]||[]).some(kw=>s.includes(kw));
+    }
+
+    function showView(which) {
+      document.getElementById('articles-grid').style.display = which==='today'   ? '' : 'none';
+      document.getElementById('archive-view').style.display  = which==='archive' ? '' : 'none';
+      document.getElementById('sports-view').style.display   = which==='sports'  ? '' : 'none';
+    }
+
+    function submitTopic() {
+      const input = document.getElementById('topic-input');
+      const status = document.getElementById('request-status');
+      const topic = input.value.trim();
+      if (!topic) { status.textContent='Type something first!'; return; }
+      fetch('/submit-topic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic})})
+        .then(r=>r.json()).then(()=>{status.textContent="Got it! We'll look into it.";input.value='';})
+        .catch(()=>{status.textContent='Something went wrong. Try again!';});
+    }
+
+    function esc(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>

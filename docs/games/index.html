@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE GAME ROOM</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0d1a;
+      --bg-card: #13132a;
+      --bg-card-hover: #1a1a38;
+      --text-primary: #f0f0ff;
+      --text-muted: #8888aa;
+      --border-dim: rgba(255, 255, 255, 0.07);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1.5rem 4rem;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(100, 60, 220, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 90%, rgba(0, 200, 200, 0.08) 0%, transparent 50%);
+    }
+
+    /* ── HEADER ── */
+    header {
+      width: 100%;
+      max-width: 1100px;
+      text-align: center;
+      padding: 5rem 1rem 3.5rem;
+    }
+
+    .header-eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .title {
+      font-size: clamp(3rem, 9vw, 6.5rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      background: linear-gradient(
+        135deg,
+        #a78bfa 0%,
+        #60a5fa 25%,
+        #f0f0ff 50%,
+        #f9a8d4 75%,
+        #a78bfa 100%
+      );
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
+      filter: drop-shadow(0 0 40px rgba(167, 139, 250, 0.35));
+    }
+
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .tagline {
+      margin-top: 1.25rem;
+      font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .header-divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #a78bfa, #60a5fa);
+      border-radius: 99px;
+      margin: 2rem auto 0;
+      opacity: 0.7;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── CARD ── */
+    .card {
+      position: relative;
+      background: var(--bg-card);
+      border-radius: 18px;
+      border: 1px solid var(--border-dim);
+      padding: 2rem 1.75rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      text-decoration: none;
+      color: inherit;
+      transition:
+        transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.28s ease,
+        background-color 0.28s ease;
+      overflow: hidden;
+    }
+
+    /* Accent top strip */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      border-radius: 18px 18px 0 0;
+      background: var(--accent);
+      opacity: 0.85;
+      transition: opacity 0.28s ease;
+    }
+
+    /* Subtle radial glow in corner on hover */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0;
+      filter: blur(60px);
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .card:hover {
+      transform: translateY(-6px) scale(1.015);
+      background-color: var(--bg-card-hover);
+      border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
+        0 0 30px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+
+    .card:hover::before { opacity: 1; }
+    .card:hover::after  { opacity: 0.18; }
+
+    .card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    /* Card internals */
+    .card-emoji {
+      font-size: 2.4rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    }
+
+    .card-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .card-play {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-top: 0.5rem;
+      padding: 0.55rem 1.3rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      color: var(--accent);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      align-self: flex-start;
+      transition:
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .card:hover .card-play {
+      background: color-mix(in srgb, var(--accent) 30%, transparent);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 35%, transparent);
+      color: #fff;
+    }
+
+    .card-play svg {
+      width: 10px;
+      height: 10px;
+      fill: currentColor;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 5rem;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      opacity: 0.7;
+      letter-spacing: 0.02em;
+    }
+
+    footer span {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.72rem;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <p class="header-eyebrow">Welcome to</p>
+    <h1 class="title">THE GAME ROOM</h1>
+    <p class="tagline">Six original games. Pure brain power.</p>
+    <div class="header-divider"></div>
+  </header>
+
+  <main class="grid">
+
+    <!-- 1. THE LYING MUSEUM -->
+    <a class="card" href="lying-museum.html" style="--accent: #f5a623;">
+      <div class="card-emoji">🕵️</div>
+      <div class="card-name">The Lying Museum</div>
+      <p class="card-desc">5 museum exhibits. 4 facts each. Find the one sneaky lie hiding in every display.</p>
+      <span class="card-play">
+        <svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg>
+        PLAY
+      </span>
+    </a>
+
+    <!-- 2. TIME CAPSULE -->
+    <a class="card" href="time-capsule.html" style="--accent: #00c9a7;">
+      <div class="card-emoji">⏳</div>
+      <div class="card-name">Time Capsule</div>
+      <p class="card-desc">A mystery object appears with zero dates. Guess which decade it came from.</p>
+      <span class="card-play">
+        <svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg>
+        PLAY
+      </span>
+    </a>
+
+    <!-- 3. SPECIES OR FICTION -->
+    <a class="card" href="species-or-fiction.html" style="--accent: #2dd60f;">
+      <div class="card-emoji">🧬</div>
+      <div class="card-name">Species or Fiction</div>
+      <p class="card-desc">Real but bizarre animals vs completely made-up creatures. Can you tell the difference?</p>
+      <span class="card-play">
+        <svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg>
+        PLAY
+      </span>
+    </a>
+
+    <!-- 4. ESCAPE THE ISLAND -->
+    <a class="card" href="escape-the-island.html" style="--accent: #ff6b35;">
+      <div class="card-emoji">🗺️</div>
+      <div class="card-name">Escape the Island</div>
+      <p class="card-desc">5 locations. 5 puzzles. 3 energy bars. Solve them all before you run out of time.</p>
+      <span class="card-play">
+        <svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg>
+        PLAY
+      </span>
+    </a>
+
+    <!-- 5. TWO TRUTHS AND A TWIST -->
+    <a class="card" href="two-truths-and-a-twist.html" style="--accent: #9b5de5;">
+      <div class="card-emoji">🎭</div>
+      <div class="card-name">Two Truths and a Twist</div>
+      <p class="card-desc">Find the lie — then FIX it. Half points for spotting it, full points for correcting it.</p>
+      <span class="card-play">
+        <svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg>
+        PLAY
+      </span>
+    </a>
+
+    <!-- 6. CHAIN GANG -->
+    <a class="card" href="chain-gang.html" style="--accent: #00f5ff;">
+      <div class="card-emoji">🔗</div>
+      <div class="card-name">Chain Gang</div>
+      <p class="card-desc">A word chain where the rules keep changing. Stay sharp or the chain breaks.</p>
+      <span class="card-play">
+        <svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg>
+        PLAY
+      </span>
+    </a>
+
+  </main>
+
+  <footer>
+    Built for curious minds aged 10–20. No downloads. No accounts. Just games.
+    <span>THE GAME ROOM &mdash; All games run entirely in your browser.</span>
+  </footer>
+
+</body>
+</html>

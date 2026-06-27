@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Species or Fiction</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0d1a;
+      --bg2: #13132a;
+      --bg3: #1a1a35;
+      --green: #39ff14;
+      --pink: #ff2d78;
+      --text: #e8e8f0;
+      --muted: #7a7a9a;
+      --border: #2a2a4a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    header a {
+      color: var(--muted);
+      text-decoration: none;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 4px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    header a:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    .logo {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Main card container ── */
+    #app {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    /* ── Intro screen ── */
+    #intro {
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    #intro h1 {
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    #intro h1 span {
+      color: var(--green);
+    }
+
+    #intro .tagline {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 1rem;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    #intro .rules {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 28px;
+      text-align: left;
+      margin-bottom: 36px;
+    }
+
+    #intro .rules p {
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      line-height: 1.75;
+    }
+
+    #intro .rules p + p {
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: transparent;
+      color: var(--green);
+      border: 2px solid var(--green);
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 14px 40px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--green);
+      color: var(--bg);
+      box-shadow: 0 0 24px rgba(57, 255, 20, 0.35);
+    }
+
+    /* ── Game screen ── */
+    #game {
+      display: none;
+    }
+
+    .progress-bar-wrap {
+      background: var(--bg3);
+      border-radius: 4px;
+      height: 4px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    .counter {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-align: right;
+      margin-bottom: 6px;
+    }
+
+    .creature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 36px 36px 28px;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .creature-label {
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .creature-name {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      letter-spacing: 0.04em;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .creature-desc {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #c8c8de;
+      font-style: italic;
+      border-left: 3px solid var(--border);
+      padding-left: 18px;
+      margin-bottom: 32px;
+    }
+
+    .choice-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn-real, .btn-fiction {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 16px 12px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+      font-weight: bold;
+    }
+
+    .btn-real {
+      background: rgba(57, 255, 20, 0.1);
+      color: var(--green);
+      border: 2px solid var(--green);
+    }
+
+    .btn-real:hover {
+      background: rgba(57, 255, 20, 0.2);
+      box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-fiction {
+      background: rgba(255, 45, 120, 0.1);
+      color: var(--pink);
+      border: 2px solid var(--pink);
+    }
+
+    .btn-fiction:hover {
+      background: rgba(255, 45, 120, 0.2);
+      box-shadow: 0 0 20px rgba(255, 45, 120, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-real:active, .btn-fiction:active {
+      transform: translateY(0);
+    }
+
+    /* ── Results screen ── */
+    #results {
+      display: none;
+    }
+
+    .results-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .results-header h2 {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+
+    .score-display {
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-family: 'Courier New', monospace;
+      color: var(--green);
+      line-height: 1;
+      margin: 16px 0 12px;
+    }
+
+    .rating {
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 8px 22px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .rating.perfect  { color: var(--green); border: 2px solid var(--green); }
+    .rating.great    { color: #7df9ff;      border: 2px solid #7df9ff; }
+    .rating.decent   { color: #ffd700;      border: 2px solid #ffd700; }
+    .rating.fooled   { color: var(--pink);  border: 2px solid var(--pink); }
+
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .result-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 16px;
+      align-items: start;
+    }
+
+    .result-item.correct {
+      border-left: 4px solid var(--green);
+    }
+
+    .result-item.wrong {
+      border-left: 4px solid var(--pink);
+    }
+
+    .result-name {
+      font-size: 1.05rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .result-verdict {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      font-weight: bold;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 4px;
+      white-space: nowrap;
+      align-self: start;
+    }
+
+    .result-verdict.is-real    { color: var(--green); background: rgba(57,255,20,0.1);  border: 1px solid var(--green); }
+    .result-verdict.is-fiction { color: var(--pink);  background: rgba(255,45,120,0.1); border: 1px solid var(--pink); }
+
+    .result-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.6;
+      grid-column: 1 / -1;
+    }
+
+    .result-detail {
+      font-size: 0.88rem;
+      color: #a0a0c0;
+      line-height: 1.65;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      grid-column: 1 / -1;
+    }
+
+    .result-your-answer {
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .result-your-answer.wrong-answer {
+      color: var(--pink);
+    }
+
+    .result-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+      align-self: center;
+    }
+
+    .play-again-wrap {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">Species or Fiction</span>
+  <a href="index.html">← Back to Hub</a>
+</header>
+
+<div id="app">
+
+  <!-- INTRO SCREEN -->
+  <section id="intro">
+    <h1>Species or <span>Fiction?</span></h1>
+    <p class="tagline">Eight creature profiles. Some walk this Earth.<br>Some were invented to fool you.</p>
+
+    <div class="rules">
+      <p>◈ &nbsp;Read each creature description carefully.</p>
+      <p>◈ &nbsp;Decide: is this a <strong style="color:var(--green)">REAL</strong> animal or pure <strong style="color:var(--pink)">FICTION</strong>?</p>
+      <p>◈ &nbsp;All real entries use accurate facts. All fake ones sound convincingly scientific.</p>
+      <p>◈ &nbsp;Score out of 8. Do not trust your instincts.</p>
+    </div>
+
+    <button class="btn-primary" id="startBtn">Begin Classification</button>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section id="game">
+    <div class="counter" id="counter">1 / 8</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <div class="creature-card" id="card">
+      <div class="creature-label">Specimen Classification</div>
+      <div class="creature-name" id="cardName"></div>
+      <div class="creature-desc" id="cardDesc"></div>
+      <div class="choice-row">
+        <button class="btn-real"    id="btnReal">◉ Real</button>
+        <button class="btn-fiction" id="btnFiction">◈ Fiction</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section id="results">
+    <div class="results-header">
+      <p style="font-family:'Courier New',monospace;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Classification Complete</p>
+      <h2>Final Report</h2>
+      <div class="score-display" id="scoreDisplay">0/8</div>
+      <div class="rating" id="ratingBadge"></div>
+    </div>
+
+    <div class="results-list" id="resultsList"></div>
+
+    <div class="play-again-wrap">
+      <button class="btn-primary" id="playAgainBtn">Classify Again</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const CREATURES = [
+    {
+      id: 1,
+      name: "Mantis Shrimp",
+      desc: "This crustacean packs a punch with the force of a bullet — fast enough to boil water at the point of impact. It also sees 16 types of color receptors. Humans have 3.",
+      isReal: true,
+      reveal: "The mantis shrimp punch accelerates faster than a .22 caliber bullet. It can shatter aquarium glass."
+    },
+    {
+      id: 2,
+      name: "Mimic Octopus",
+      desc: "Discovered in 1998, this creature can reshape its body and alter its color to impersonate over 15 different species, including lionfish, flatfish, and sea snakes — often switching based on which predator is nearby.",
+      isReal: true,
+      reveal: "It decides WHICH animal to mimic based on the specific predator threatening it. That's strategy-level thinking."
+    },
+    {
+      id: 3,
+      name: "Pistol Shrimp",
+      desc: "This tiny crustacean snaps its oversized claw so fast it creates a cavitation bubble that briefly reaches temperatures hotter than the surface of the sun — producing a flash of light and a shockwave that stuns or kills prey.",
+      isReal: true,
+      reveal: "The snap happens in 600 microseconds. The bubble reaches ~8,000°F. It's also deafeningly loud — colonies of pistol shrimp are one of the loudest things in the ocean."
+    },
+    {
+      id: 4,
+      name: "Tardigrade",
+      desc: "Microscopic animals that can survive the vacuum of outer space, radiation doses that would kill a human 1,000 times over, temperatures from near absolute zero to over 300°F, and complete dehydration for decades. They essentially pause all biological functions and wait.",
+      isReal: true,
+      reveal: "Tardigrades have been found in the Himalayas, deep ocean trenches, hot springs, and — accidentally — were crashed onto the Moon in 2019."
+    },
+    {
+      id: 5,
+      name: "Axolotl",
+      desc: "A salamander that never undergoes metamorphosis — it retains its juvenile, aquatic form for its entire life. If it loses a limb, it regrows it completely, including bone, muscle, and nerve tissue. It can even regenerate parts of its heart and brain.",
+      isReal: true,
+      reveal: "Scientists study axolotls intensively trying to understand how to apply their regeneration ability to human medicine."
+    },
+    {
+      id: 6,
+      name: "Velvet Shadowfin",
+      desc: "A deep-sea fish discovered near hydrothermal vents in 2019. Its dorsal fin contains a resonance membrane capable of producing sounds at 200 decibels — loud enough to fracture bone at close range. Researchers must wear acoustic shielding when handling specimens.",
+      isReal: false,
+      reveal: "Completely made up — though pistol shrimp do produce shockwaves, so we weren't too far off."
+    },
+    {
+      id: 7,
+      name: "Crystalline Moth",
+      desc: "Found only in the cloud forests of Peru, this moth's wings are completely transparent, composed of microscopic prisms that bend ultraviolet light into a focused beam. Researchers believe this UV beam stuns small prey insects, making it the only known light-weapon predator.",
+      isReal: false,
+      reveal: "The transparent wings are inspired by the real glasswing butterfly — but the UV laser beam? That's ours."
+    },
+    {
+      id: 8,
+      name: "Thornback Salamander",
+      desc: "Native to volcanic regions of Iceland, this salamander has evolved a heat-absorbing keratin layer in its skin. It stores thermal energy in summer, then slowly releases it through winter — acting as a biological heat battery. Local legends call it the 'ember lizard.'",
+      isReal: false,
+      reveal: "The 'ember lizard' legend was very convincing even to us. But no salamander has evolved thermal energy storage — yet."
+    }
+  ];
+
+  // Fisher-Yates shuffle
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  let deck = [];
+  let current = 0;
+  let answers = [];
+
+  const introEl      = document.getElementById('intro');
+  const gameEl       = document.getElementById('game');
+  const resultsEl    = document.getElementById('results');
+  const counterEl    = document.getElementById('counter');
+  const progressFill = document.getElementById('progressFill');
+  const cardName     = document.getElementById('cardName');
+  const cardDesc     = document.getElementById('cardDesc');
+  const btnReal      = document.getElementById('btnReal');
+  const btnFiction   = document.getElementById('btnFiction');
+  const startBtn     = document.getElementById('startBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+
+  function startGame() {
+    deck = shuffle(CREATURES);
+    current = 0;
+    answers = [];
+    introEl.style.display = 'none';
+    resultsEl.style.display = 'none';
+    gameEl.style.display = 'block';
+    showCard();
+  }
+
+  function showCard() {
+    const c = deck[current];
+    counterEl.textContent = `${current + 1} / ${deck.length}`;
+    progressFill.style.width = `${(current / deck.length) * 100}%`;
+    cardName.textContent = c.name;
+    cardDesc.textContent = c.desc;
+
+    // Reset button states
+    btnReal.disabled = false;
+    btnFiction.disabled = false;
+    btnReal.style.opacity = '1';
+    btnFiction.style.opacity = '1';
+
+    // Animate card
+    const card = document.getElementById('card');
+    card.style.animation = 'none';
+    void card.offsetWidth; // reflow
+    card.style.animation = 'fadeIn 0.35s ease';
+  }
+
+  function recordAnswer(playerSaidReal) {
+    btnReal.disabled = true;
+    btnFiction.disabled = true;
+
+    const c = deck[current];
+    answers.push({
+      creature: c,
+      playerSaidReal: playerSaidReal,
+      correct: playerSaidReal === c.isReal
+    });
+
+    // Brief flash on selected button
+    const btn = playerSaidReal ? btnReal : btnFiction;
+    btn.style.opacity = '0.6';
+
+    setTimeout(() => {
+      current++;
+      if (current < deck.length) {
+        showCard();
+      } else {
+        showResults();
+      }
+    }, 300);
+  }
+
+  function getRating(score) {
+    if (score === 8) return { text: "Cryptozoologist",  cls: "perfect" };
+    if (score >= 6)  return { text: "Sharp Eye",        cls: "great" };
+    if (score >= 4)  return { text: "Decent Instincts", cls: "decent" };
+    return               { text: "Easily Fooled",    cls: "fooled" };
+  }
+
+  function showResults() {
+    gameEl.style.display = 'none';
+    resultsEl.style.display = 'block';
+
+    const score = answers.filter(a => a.correct).length;
+    const rating = getRating(score);
+
+    document.getElementById('scoreDisplay').textContent = `${score}/8`;
+
+    const badge = document.getElementById('ratingBadge');
+    badge.textContent = rating.text;
+    badge.className = `rating ${rating.cls}`;
+
+    const list = document.getElementById('resultsList');
+    list.innerHTML = '';
+
+    answers.forEach(a => {
+      const item = document.createElement('div');
+      item.className = `result-item ${a.correct ? 'correct' : 'wrong'}`;
+
+      const verdictCls = a.creature.isReal ? 'is-real' : 'is-fiction';
+      const verdictText = a.creature.isReal ? 'Real' : 'Fiction';
+
+      const playerLabel = a.playerSaidReal ? 'Real' : 'Fiction';
+      const playerCls = a.correct ? '' : 'wrong-answer';
+
+      const icon = a.correct ? '✓' : '✗';
+
+      item.innerHTML = `
+        <div>
+          <div class="result-name">${a.creature.name}</div>
+          <div class="result-your-answer ${playerCls}">You said: ${playerLabel}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="result-verdict ${verdictCls}">${verdictText}</span>
+          <span class="result-icon" style="color:${a.correct ? 'var(--green)' : 'var(--pink)'}">${icon}</span>
+        </div>
+        <div class="result-detail">
+          ${a.creature.isReal
+            ? `<strong style="color:var(--green);font-family:'Courier New',monospace;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;">Fun fact:</strong><br>${a.creature.reveal}`
+            : `<strong style="color:var(--pink);font-family:'Courier New',monospace;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;">Confession:</strong><br>${a.creature.reveal}`
+          }
+        </div>
+      `;
+
+      list.appendChild(item);
+    });
+
+    // Scroll to top of results
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Event listeners
+  startBtn.addEventListener('click', startGame);
+  playAgainBtn.addEventListener('click', startGame);
+  btnReal.addEventListener('click', () => recordAnswer(true));
+  btnFiction.addEventListener('click', () => recordAnswer(false));
+</script>
+
+</body>
+</html>

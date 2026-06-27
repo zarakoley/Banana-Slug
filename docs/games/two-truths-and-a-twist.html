@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two Truths and a Twist</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d1a;
+      --surface: #14142b;
+      --surface2: #1c1c38;
+      --purple: #9b5de5;
+      --purple-light: #bb85ff;
+      --purple-dark: #6e3ab0;
+      --green: #00f5a0;
+      --red: #ff4d6d;
+      --yellow: #ffd60a;
+      --text: #e8e8f0;
+      --muted: #8888aa;
+      --border: #2a2a4a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 16px 40px;
+    }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0 12px;
+    }
+
+    .back-link {
+      color: var(--purple-light);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .back-link:hover { opacity: 1; }
+
+    .score-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.9rem;
+      color: var(--purple-light);
+      font-weight: 600;
+    }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 760px;
+      margin-bottom: 28px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--purple-dark), var(--purple-light));
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    /* ── CARD ── */
+    .card {
+      width: 100%;
+      max-width: 760px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 36px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .round-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--purple);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .round-topic {
+      font-size: 1.55rem;
+      font-weight: 800;
+      margin-bottom: 28px;
+      background: linear-gradient(135deg, #fff 30%, var(--purple-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .instructions {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    /* ── STATEMENTS ── */
+    .statements { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+
+    .stmt-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text);
+      font-size: 0.97rem;
+      line-height: 1.55;
+      transition: border-color 0.18s, background 0.18s, transform 0.12s;
+      width: 100%;
+    }
+
+    .stmt-btn:hover:not(:disabled) {
+      border-color: var(--purple);
+      background: #1e1e3a;
+      transform: translateY(-1px);
+    }
+
+    .stmt-btn:disabled { cursor: default; }
+
+    .stmt-btn.selected-wrong {
+      border-color: var(--red);
+      background: rgba(255, 77, 109, 0.08);
+    }
+
+    .stmt-btn.correct-choice {
+      border-color: var(--green);
+      background: rgba(0, 245, 160, 0.07);
+    }
+
+    .stmt-btn.revealed-lie {
+      border-color: var(--yellow);
+      background: rgba(255, 214, 10, 0.07);
+    }
+
+    .stmt-label {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--purple-light);
+      min-width: 22px;
+      margin-top: 1px;
+    }
+
+    /* ── FEEDBACK ── */
+    .feedback-box {
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .feedback-box.wrong {
+      background: rgba(255, 77, 109, 0.1);
+      border: 1px solid rgba(255, 77, 109, 0.35);
+      color: #ffb0be;
+      display: block;
+    }
+
+    .feedback-box.correct {
+      background: rgba(0, 245, 160, 0.08);
+      border: 1px solid rgba(0, 245, 160, 0.3);
+      color: #80ffcf;
+      display: block;
+    }
+
+    .feedback-box.explanation {
+      background: rgba(155, 93, 229, 0.1);
+      border: 1px solid rgba(155, 93, 229, 0.3);
+      color: var(--text);
+      display: block;
+    }
+
+    /* ── FIX INPUT SECTION ── */
+    .fix-section {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .fix-section.visible { display: flex; }
+
+    .fix-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .fix-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: -6px;
+    }
+
+    .fix-row { display: flex; gap: 10px; align-items: stretch; }
+
+    .fix-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+
+    .fix-input:focus { border-color: var(--purple); }
+    .fix-input::placeholder { color: var(--muted); }
+
+    .fix-input.correct-fix { border-color: var(--green); }
+    .fix-input.wrong-fix { border-color: var(--red); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.18s, transform 0.12s;
+      letter-spacing: 0.03em;
+    }
+
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple-dark), var(--purple));
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--muted);
+    }
+
+    .btn-ghost:hover { border-color: var(--purple); color: var(--purple-light); }
+
+    .btn-green {
+      background: linear-gradient(135deg, #00c07a, var(--green));
+      color: #0d1a12;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    /* ── POINTS CHIP ── */
+    .points-chip {
+      display: inline-block;
+      border-radius: 99px;
+      padding: 3px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .pts-2 { background: rgba(0,245,160,0.15); color: var(--green); border: 1px solid rgba(0,245,160,0.3); }
+    .pts-1 { background: rgba(255,214,10,0.12); color: var(--yellow); border: 1px solid rgba(255,214,10,0.3); }
+    .pts-0 { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.3); }
+
+    /* ── END SCREEN ── */
+    #end-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      padding: 40px 20px;
+    }
+
+    .end-score-ring {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: conic-gradient(var(--purple) 0%, var(--purple-dark) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px rgba(155,93,229,0.4);
+    }
+
+    .end-score-num {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1;
+      color: #fff;
+    }
+
+    .end-score-denom {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .end-rating {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--purple-light);
+    }
+
+    .end-message {
+      font-size: 0.95rem;
+      color: var(--muted);
+      max-width: 400px;
+      line-height: 1.6;
+    }
+
+    .round-breakdown {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.88rem;
+    }
+
+    .breakdown-topic { color: var(--muted); }
+    .breakdown-pts { font-weight: 700; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    /* ── UTILITY ── */
+    .hidden { display: none !important; }
+    .mt8 { margin-top: 8px; }
+    .mt16 { margin-top: 16px; }
+
+    @media (max-width: 540px) {
+      .card { padding: 24px 20px; }
+      .round-topic { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-link" href="index.html">← Back to Hub</a>
+    <div class="score-badge" id="score-display">Score: 0 / 10</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="progress-label">Round 1 of 5</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="card" id="game-card">
+
+    <!-- ROUND VIEW -->
+    <div id="round-view">
+      <div class="round-label" id="round-label">Round 1 — SPACE</div>
+      <div class="round-topic" id="round-topic">Which statement has the twist?</div>
+      <div class="instructions">Two statements are completely true. One has a subtle factual error — find it!</div>
+
+      <div class="statements" id="statements-list">
+        <!-- injected by JS -->
+      </div>
+
+      <!-- Wrong pick feedback -->
+      <div class="feedback-box wrong" id="fb-wrong"></div>
+
+      <!-- Correct pick: fix section -->
+      <div class="fix-section" id="fix-section">
+        <div class="fix-label" id="fix-label">Good catch! Now fix it — what should that detail actually be?</div>
+        <div class="fix-hint" id="fix-hint"></div>
+        <div class="fix-row">
+          <input class="fix-input" id="fix-input" type="text" placeholder="Type your correction…" autocomplete="off" />
+          <button class="btn btn-primary" id="fix-submit-btn" onclick="submitFix()">Submit Fix</button>
+        </div>
+      </div>
+
+      <!-- Post-fix / explanation feedback -->
+      <div class="feedback-box explanation" id="fb-explanation"></div>
+
+      <!-- Action buttons -->
+      <div class="action-row" id="action-row">
+        <button class="btn btn-ghost hidden" id="reveal-btn" onclick="revealAnswer()">Reveal Answer</button>
+        <button class="btn btn-primary hidden" id="next-btn" onclick="nextRound()">Next Round →</button>
+        <button class="btn btn-green hidden" id="finish-btn" onclick="showEnd()">See Results</button>
+      </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen">
+      <div class="end-score-ring">
+        <div class="end-score-num" id="end-score-num">0</div>
+        <div class="end-score-denom">out of 10</div>
+      </div>
+      <div class="end-rating" id="end-rating">Loading…</div>
+      <div class="end-message" id="end-message"></div>
+      <div class="round-breakdown" id="round-breakdown"></div>
+      <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+        <a class="btn btn-ghost" href="index.html">Back to Hub</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+  // ─────────────────────────────────────────────
+  //  ROUND DATA
+  // ─────────────────────────────────────────────
+  const ROUNDS = [
+    {
+      topic: "SPACE",
+      statements: [
+        { label: "A", text: "The Sun is about 93 million miles from Earth on average." },
+        { label: "B", text: "Jupiter has 67 known moons." },
+        { label: "C", text: "Pluto was reclassified as a dwarf planet in 2006." }
+      ],
+      lieIndex: 1, // 0-based: B
+      fixHint: "Fix the number — how many moons does Jupiter actually have?",
+      fixKeywords: ["95"],
+      fixLabel: "Fix the number",
+      explanation: "Jupiter actually has <strong>95 known moons</strong> (as of 2023 when the count was updated). 67 was the older figure. The others are both true — Earth–Sun distance ~93 million miles, and Pluto's demotion was official in August 2006.",
+      wrongDetail: '"67"',
+      correctDetail: '"95"'
+    },
+    {
+      topic: "ANIMALS",
+      statements: [
+        { label: "A", text: "A group of flamingos is called a flamboyance." },
+        { label: "B", text: "Elephants are the only mammals that cannot jump." },
+        { label: "C", text: "A snail can sleep for up to 3 years." }
+      ],
+      lieIndex: 1,
+      fixHint: "Name another mammal that also can't jump.",
+      fixKeywords: ["hippo", "rhino", "rhinoceros", "sloth", "not the only", "other"],
+      fixLabel: "Name another mammal",
+      explanation: "Elephants are <strong>not the only</strong> mammals that can't jump — hippos, rhinos, and sloths also cannot. The flamingo collective noun (flamboyance) and snail hibernation fact are both true.",
+      wrongDetail: '"only"',
+      correctDetail: '"not the only — hippos and rhinos can\'t jump either"'
+    },
+    {
+      topic: "WEIRD WORLD RECORDS",
+      statements: [
+        { label: "A", text: "The Great Wall of China is not actually visible from space with the naked eye — that's a myth." },
+        { label: "B", text: "The world's largest living organism is the blue whale." },
+        { label: "C", text: "The shortest war in history lasted about 38 to 45 minutes." }
+      ],
+      lieIndex: 1,
+      fixHint: "What is actually the largest living organism?",
+      fixKeywords: ["pando", "aspen", "tree", "fungus", "armillaria", "honey"],
+      fixLabel: "Name the real organism",
+      explanation: "The world's largest living organism is <strong>Pando</strong>, a clonal colony of quaking aspen trees in Utah spanning ~106 acres. The Great Wall space-visibility myth is indeed a myth (true), and the Anglo-Zanzibar War of 1896 lasted just ~38–45 minutes (true).",
+      wrongDetail: '"blue whale"',
+      correctDetail: '"Pando, a clonal aspen colony in Utah"'
+    },
+    {
+      topic: "SCIENCE",
+      statements: [
+        { label: "A", text: "There are more stars in the observable universe than grains of sand on all of Earth's beaches." },
+        { label: "B", text: "Hot water can freeze faster than cold water — this is called the Wilson Effect." },
+        { label: "C", text: "Humans share about 60% of their DNA with bananas." }
+      ],
+      lieIndex: 1,
+      fixHint: "Fix the name — what is this phenomenon actually called?",
+      fixKeywords: ["mpemba"],
+      fixLabel: "Fix the name",
+      explanation: "The correct name is the <strong>Mpemba Effect</strong>, named after Erasto Mpemba who documented it in 1963. There is no 'Wilson Effect.' Stars outnumbering sand grains and the 60% banana DNA figure are both considered accurate (if mind-bending) facts.",
+      wrongDetail: '"Wilson Effect"',
+      correctDetail: '"Mpemba Effect"'
+    },
+    {
+      topic: "HISTORY",
+      statements: [
+        { label: "A", text: "Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid." },
+        { label: "B", text: "Napoleon Bonaparte was 5'2\" tall — remarkably short even for his time." },
+        { label: "C", text: "Vikings never actually wore horned helmets — that was invented by 19th century artists." }
+      ],
+      lieIndex: 1,
+      fixHint: "Fix the height — how tall was Napoleon in modern measurements?",
+      fixKeywords: ["5'6", "5'7", "5 6", "5 7", "average", "not short", "five foot six", "five foot seven", "5ft6", "5ft7"],
+      fixLabel: "Fix the height",
+      explanation: "Napoleon was approximately <strong>5'6\" to 5'7\"</strong> in modern measurements — perfectly average for a French man of his era. The '5'2\"' myth arose from confusion between French and English inch measurements. The other two are genuinely astonishing true facts.",
+      wrongDetail: '"5\'2\""',
+      correctDetail: '"about 5\'6\" to 5\'7\" (average height for his era)"'
+    }
+  ];
+
+  // ─────────────────────────────────────────────
+  //  STATE
+  // ─────────────────────────────────────────────
+  let currentRound = 0;
+  let totalScore = 0;
+  let roundScores = []; // 0, 1, or 2 per round
+  let wrongAttempts = 0;   // how many wrong picks this round
+  let roundResolved = false;
+  let correctPicked = false;
+
+  // ─────────────────────────────────────────────
+  //  INIT
+  // ─────────────────────────────────────────────
+  function init() {
+    currentRound = 0;
+    totalScore = 0;
+    roundScores = [];
+    renderRound();
+  }
+
+  // ─────────────────────────────────────────────
+  //  RENDER ROUND
+  // ─────────────────────────────────────────────
+  function renderRound() {
+    wrongAttempts = 0;
+    roundResolved = false;
+    correctPicked = false;
+
+    const r = ROUNDS[currentRound];
+
+    // Progress
+    const pct = Math.round((currentRound / ROUNDS.length) * 100);
+    document.getElementById("progress-fill").style.width = pct + "%";
+    document.getElementById("progress-label").textContent = `Round ${currentRound + 1} of ${ROUNDS.length}`;
+    document.getElementById("progress-pct").textContent = pct + "%";
+
+    // Labels
+    document.getElementById("round-label").textContent = `Round ${currentRound + 1} — ${r.topic}`;
+    document.getElementById("round-topic").textContent = "Which statement has the twist?";
+
+    // Clear feedback
+    setFeedback("fb-wrong", "", false);
+    setFeedback("fb-explanation", "", false);
+
+    // Fix section
+    const fixSec = document.getElementById("fix-section");
+    fixSec.classList.remove("visible");
+    const inp = document.getElementById("fix-input");
+    inp.value = "";
+    inp.className = "fix-input";
+    inp.disabled = false;
+    document.getElementById("fix-submit-btn").disabled = false;
+    document.getElementById("fix-label").textContent = "Good catch! Now fix it — what should that detail actually be?";
+    document.getElementById("fix-hint").textContent = r.fixHint;
+
+    // Buttons
+    hide("reveal-btn");
+    hide("next-btn");
+    hide("finish-btn");
+
+    // Statements
+    const list = document.getElementById("statements-list");
+    list.innerHTML = "";
+    r.statements.forEach((s, i) => {
+      const btn = document.createElement("button");
+      btn.className = "stmt-btn";
+      btn.dataset.index = i;
+      btn.innerHTML = `<span class="stmt-label">${s.label}</span><span>${s.text}</span>`;
+      btn.addEventListener("click", () => pickStatement(i, btn));
+      list.appendChild(btn);
+    });
+
+    updateScoreDisplay();
+  }
+
+  // ─────────────────────────────────────────────
+  //  PICK A STATEMENT
+  // ─────────────────────────────────────────────
+  function pickStatement(idx, btn) {
+    if (roundResolved) return;
+    const r = ROUNDS[currentRound];
+
+    if (idx === r.lieIndex) {
+      // Correct!
+      correctPicked = true;
+      disableAllStatements();
+      btn.classList.add("correct-choice");
+      setFeedback("fb-wrong", "", false);
+
+      // Show fix input
+      document.getElementById("fix-section").classList.add("visible");
+      document.getElementById("fix-input").focus();
+
+    } else {
+      // Wrong
+      wrongAttempts++;
+      btn.classList.add("selected-wrong");
+      btn.disabled = true;
+
+      if (wrongAttempts === 1) {
+        setFeedback("fb-wrong",
+          "❌ Wrong! That one checks out. Try again — or reveal the answer.",
+          true, "wrong");
+        show("reveal-btn");
+      } else {
+        // 2nd wrong — auto-reveal
+        setFeedback("fb-wrong", "Still not it! Let's reveal the answer.", true, "wrong");
+        revealAnswer();
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  //  SUBMIT FIX
+  // ─────────────────────────────────────────────
+  function submitFix() {
+    if (roundResolved) return;
+    const r = ROUNDS[currentRound];
+    const inp = document.getElementById("fix-input");
+    const raw = inp.value.trim();
+
+    if (!raw) {
+      inp.placeholder = "Please type something first!";
+      return;
+    }
+
+    const lower = raw.toLowerCase();
+    const correct = r.fixKeywords.some(kw => lower.includes(kw.toLowerCase()));
+
+    inp.disabled = true;
+    document.getElementById("fix-submit-btn").disabled = true;
+
+    if (correct) {
+      inp.classList.add("correct-fix");
+      const pts = 2;
+      awardPoints(pts);
+      const chip = pointsChip(pts);
+      setFeedback("fb-explanation",
+        `✅ Perfect! ${chip}<br><br>` +
+        `The wrong detail was ${r.wrongDetail}. Correct: ${r.correctDetail}.<br><br>` +
+        r.explanation,
+        true, "explanation");
+    } else {
+      inp.classList.add("wrong-fix");
+      const pts = 1;
+      awardPoints(pts);
+      const chip = pointsChip(pts);
+      setFeedback("fb-explanation",
+        `⚠️ You found the lie, but the fix needs work. ${chip}<br><br>` +
+        `The wrong detail was ${r.wrongDetail}. Correct: ${r.correctDetail}.<br><br>` +
+        r.explanation,
+        true, "explanation");
+    }
+
+    roundResolved = true;
+    showNextOrFinish();
+  }
+
+  // ─────────────────────────────────────────────
+  //  REVEAL ANSWER (no points)
+  // ─────────────────────────────────────────────
+  function revealAnswer() {
+    if (roundResolved) return;
+    const r = ROUNDS[currentRound];
+    roundResolved = true;
+    disableAllStatements();
+    hide("reveal-btn");
+
+    // Highlight the lie button
+    const btns = document.querySelectorAll(".stmt-btn");
+    btns[r.lieIndex].classList.add("revealed-lie");
+
+    // Hide fix section if open
+    document.getElementById("fix-section").classList.remove("visible");
+
+    const pts = correctPicked ? 1 : 0; // if they had found it but didn't fix
+    // Actually on reveal: 0 pts if they never correctly identified it
+    awardPoints(0);
+    const chip = pointsChip(0);
+
+    setFeedback("fb-explanation",
+      `🔍 Answer revealed — no points awarded. ${chip}<br><br>` +
+      `The twist was statement <strong>${r.statements[r.lieIndex].label}</strong>. ` +
+      `The wrong detail was ${r.wrongDetail}. Correct: ${r.correctDetail}.<br><br>` +
+      r.explanation,
+      true, "explanation");
+
+    showNextOrFinish();
+  }
+
+  // ─────────────────────────────────────────────
+  //  AWARD POINTS
+  // ─────────────────────────────────────────────
+  function awardPoints(pts) {
+    totalScore += pts;
+    roundScores.push(pts);
+    updateScoreDisplay();
+  }
+
+  function updateScoreDisplay() {
+    document.getElementById("score-display").textContent = `Score: ${totalScore} / 10`;
+  }
+
+  // ─────────────────────────────────────────────
+  //  NEXT / FINISH
+  // ─────────────────────────────────────────────
+  function showNextOrFinish() {
+    hide("reveal-btn");
+    if (currentRound < ROUNDS.length - 1) {
+      show("next-btn");
+    } else {
+      show("finish-btn");
+    }
+  }
+
+  function nextRound() {
+    currentRound++;
+    renderRound();
+  }
+
+  // ─────────────────────────────────────────────
+  //  END SCREEN
+  // ─────────────────────────────────────────────
+  function showEnd() {
+    document.getElementById("round-view").style.display = "none";
+    const end = document.getElementById("end-screen");
+    end.style.display = "flex";
+
+    // Update progress to 100%
+    document.getElementById("progress-fill").style.width = "100%";
+    document.getElementById("progress-label").textContent = "Complete!";
+    document.getElementById("progress-pct").textContent = "100%";
+
+    document.getElementById("end-score-num").textContent = totalScore;
+
+    let rating, message;
+    if (totalScore === 10) {
+      rating = "Professor of Facts 🎓";
+      message = "A perfect score! You spotted every twist AND nailed every correction. Genuinely impressive — your brain is a beautiful fact machine.";
+    } else if (totalScore >= 7) {
+      rating = "Sharp Mind 🔍";
+      message = "Really solid! You caught most of the twists and fixed them well. A few sneaky ones slipped through, but you clearly know your stuff.";
+    } else if (totalScore >= 4) {
+      rating = "Close Enough 🤔";
+      message = "Not bad — you're halfway there. Some of those twists were subtle, and catching a lie is just the first step. Keep that fact-checker sharpened!";
+    } else {
+      rating = "Nice Try 😅";
+      message = "The twists got you this time! The good news: now you know 5 genuinely surprising facts. Come back and crush it on the next attempt.";
+    }
+
+    document.getElementById("end-rating").textContent = rating;
+    document.getElementById("end-message").textContent = message;
+
+    // Breakdown
+    const breakdown = document.getElementById("round-breakdown");
+    breakdown.innerHTML = "";
+    ROUNDS.forEach((r, i) => {
+      const pts = roundScores[i] ?? 0;
+      const row = document.createElement("div");
+      row.className = "breakdown-row";
+      row.innerHTML = `
+        <span class="breakdown-topic">${r.topic}</span>
+        <span class="breakdown-pts">${pointsChip(pts)}</span>
+      `;
+      breakdown.appendChild(row);
+    });
+  }
+
+  function restartGame() {
+    document.getElementById("end-screen").style.display = "none";
+    document.getElementById("round-view").style.display = "block";
+    init();
+  }
+
+  // ─────────────────────────────────────────────
+  //  HELPERS
+  // ─────────────────────────────────────────────
+  function setFeedback(id, html, visible, cls) {
+    const el = document.getElementById(id);
+    el.innerHTML = html;
+    el.className = "feedback-box";
+    if (visible && cls) el.classList.add(cls);
+    if (!visible) el.style.display = "none";
+    else el.style.display = "block";
+  }
+
+  function show(id) { document.getElementById(id).classList.remove("hidden"); }
+  function hide(id) { document.getElementById(id).classList.add("hidden"); }
+
+  function disableAllStatements() {
+    document.querySelectorAll(".stmt-btn").forEach(b => b.disabled = true);
+  }
+
+  function pointsChip(pts) {
+    if (pts === 2) return `<span class="points-chip pts-2">+2 pts</span>`;
+    if (pts === 1) return `<span class="points-chip pts-1">+1 pt</span>`;
+    return `<span class="points-chip pts-0">+0 pts</span>`;
+  }
+
+  // Enter key submits fix
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && document.getElementById("fix-section").classList.contains("visible")) {
+      submitFix();
+    }
+  });
+
+  // ─────────────────────────────────────────────
+  //  START
+  // ─────────────────────────────────────────────
+  init();
+  </script>
+</body>
+</html>

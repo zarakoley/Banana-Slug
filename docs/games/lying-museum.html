@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Lying Museum</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0d1a;
+      --bg-card: #13132a;
+      --bg-card-hover: #1a1a38;
+      --gold: #f5a623;
+      --gold-dim: #b87718;
+      --gold-light: #ffd27a;
+      --text: #e8e8f0;
+      --text-dim: #9090b0;
+      --green: #3ecf6e;
+      --green-bg: #0d2e1a;
+      --red: #e85050;
+      --red-bg: #2e0d0d;
+      --border: rgba(245, 166, 35, 0.25);
+      --border-hover: rgba(245, 166, 35, 0.6);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .museum-title {
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      text-shadow: 0 0 40px rgba(245, 166, 35, 0.35);
+      line-height: 1.1;
+    }
+
+    .museum-subtitle {
+      margin-top: 8px;
+      font-size: 1rem;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 0.85rem;
+      color: var(--gold-dim);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--gold); }
+    .back-link::before { content: "← "; }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 28px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .progress-label span {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .progress-label .exhibit-num {
+      font-size: 1rem;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .progress-bar-track {
+      height: 4px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Exhibit card ── */
+    #game-area {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .exhibit-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .exhibit-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(245, 166, 35, 0.12);
+      border: 1px solid rgba(245, 166, 35, 0.3);
+      border-radius: 6px;
+      padding: 4px 10px;
+      margin-bottom: 12px;
+    }
+
+    .exhibit-name {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+
+    .exhibit-instruction {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+      font-style: italic;
+    }
+
+    /* ── Fact buttons ── */
+    .facts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .fact-btn {
+      width: 100%;
+      text-align: left;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: var(--text);
+      font-size: 0.97rem;
+      line-height: 1.5;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .fact-btn:hover:not(:disabled) {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+      transform: translateX(4px);
+    }
+
+    .fact-btn:disabled { cursor: default; }
+
+    .fact-letter {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(245, 166, 35, 0.12);
+      border: 1px solid rgba(245, 166, 35, 0.35);
+      color: var(--gold);
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .fact-text { flex: 1; }
+
+    /* Answer states */
+    .fact-btn.correct {
+      background: var(--green-bg);
+      border-color: var(--green);
+      animation: flashGreen 0.35s ease;
+    }
+    .fact-btn.correct .fact-letter {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .fact-btn.wrong {
+      background: var(--red-bg);
+      border-color: var(--red);
+      animation: flashRed 0.35s ease;
+    }
+    .fact-btn.wrong .fact-letter {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    /* Reveal state — show lie location if player was wrong */
+    .fact-btn.reveal-lie {
+      background: var(--green-bg);
+      border-color: var(--green);
+      opacity: 0.85;
+    }
+    .fact-btn.reveal-lie .fact-letter {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .fact-btn.dimmed { opacity: 0.4; }
+
+    @keyframes flashGreen {
+      0%   { box-shadow: 0 0 0 0 rgba(62, 207, 110, 0.5); }
+      60%  { box-shadow: 0 0 0 14px rgba(62, 207, 110, 0); }
+      100% { box-shadow: none; }
+    }
+    @keyframes flashRed {
+      0%   { box-shadow: 0 0 0 0 rgba(232, 80, 80, 0.5); }
+      60%  { box-shadow: 0 0 0 14px rgba(232, 80, 80, 0); }
+      100% { box-shadow: none; }
+    }
+
+    /* ── Explanation box ── */
+    .explanation-box {
+      margin-top: 24px;
+      padding: 18px 20px;
+      border-radius: 12px;
+      border-left: 4px solid var(--gold);
+      background: rgba(245, 166, 35, 0.07);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text);
+      animation: fadeSlideIn 0.35s ease both;
+    }
+
+    .explanation-box .exp-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Next / Continue button ── */
+    .continue-btn {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none;
+      border-radius: 12px;
+      color: #0d0d1a;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      animation: fadeSlideIn 0.35s 0.15s ease both;
+    }
+
+    .continue-btn:hover {
+      opacity: 0.88;
+      transform: translateY(-2px);
+    }
+
+    /* ── Score screen ── */
+    #score-screen {
+      width: 100%;
+      max-width: 680px;
+      display: none;
+      animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .score-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 32px 36px;
+      text-align: center;
+    }
+
+    .score-badge {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      background: rgba(245, 166, 35, 0.1);
+    }
+
+    .score-number {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .score-denom {
+      font-size: 1rem;
+      color: var(--gold-dim);
+      font-weight: 600;
+    }
+
+    .score-rating {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .score-tagline {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    /* ── Recap list ── */
+    .recap-list {
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .recap-item {
+      padding: 14px 18px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      font-size: 0.88rem;
+    }
+
+    .recap-item.got-it {
+      border-color: rgba(62, 207, 110, 0.35);
+      background: var(--green-bg);
+    }
+
+    .recap-item.missed {
+      border-color: rgba(232, 80, 80, 0.35);
+      background: var(--red-bg);
+    }
+
+    .recap-exhibit-name {
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .recap-item.got-it .recap-exhibit-name { color: var(--green); }
+    .recap-item.missed .recap-exhibit-name { color: var(--red); }
+
+    .recap-explanation {
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .play-again-btn {
+      display: inline-block;
+      padding: 15px 40px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none;
+      border-radius: 12px;
+      color: #0d0d1a;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .play-again-btn:hover {
+      opacity: 0.88;
+      transform: translateY(-2px);
+    }
+
+    /* ── Decorative corner lines ── */
+    .exhibit-card::before,
+    .exhibit-card::after {
+      content: '';
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-color: var(--gold-dim);
+      border-style: solid;
+      opacity: 0.4;
+    }
+    .exhibit-card::before {
+      top: 14px; left: 14px;
+      border-width: 2px 0 0 2px;
+      border-radius: 4px 0 0 0;
+    }
+    .exhibit-card::after {
+      bottom: 14px; right: 14px;
+      border-width: 0 2px 2px 0;
+      border-radius: 0 0 4px 0;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .exhibit-card { padding: 24px 18px; }
+      .fact-btn { padding: 14px 16px; font-size: 0.92rem; }
+      .score-card { padding: 32px 20px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="museum-title">The Lying Museum</div>
+    <div class="museum-subtitle">One fact in each exhibit is a lie. Can you spot it?</div>
+    <a class="back-link" href="index.html">Back to Hub</a>
+  </header>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span class="exhibit-num" id="progress-text">Exhibit 1 of 5</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Game area -->
+  <div id="game-area"></div>
+
+  <!-- Score screen -->
+  <div id="score-screen">
+    <div class="score-card">
+      <div class="score-badge">
+        <div>
+          <div class="score-number" id="final-score">0</div>
+          <div class="score-denom">/ 5</div>
+        </div>
+      </div>
+      <div class="score-rating" id="score-rating"></div>
+      <div class="score-tagline" id="score-tagline"></div>
+      <div class="recap-list" id="recap-list"></div>
+      <button class="play-again-btn" onclick="startGame()">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    const EXHIBITS = [
+      {
+        id: 1,
+        name: "Octopuses",
+        facts: [
+          { letter: "A", text: "Octopuses have three hearts and blue blood." },
+          { letter: "B", text: "They can change color despite being colorblind." },
+          { letter: "C", text: "An octopus has eight arms AND eight tentacles." },
+          { letter: "D", text: "They are highly intelligent and can open jars and use tools." }
+        ],
+        lieIndex: 2,
+        explanation: "Octopuses have 8 arms — zero tentacles. Tentacles are a squid thing. Arms have suckers along their full length; tentacles only have suckers at the tip."
+      },
+      {
+        id: 2,
+        name: "Mount Everest",
+        facts: [
+          { letter: "A", text: "The summit is in the 'death zone' where oxygen is too thin to sustain life long-term." },
+          { letter: "B", text: "Edmund Hillary and Tenzing Norgay first summited Everest in 1953." },
+          { letter: "C", text: "Everest is the tallest mountain from Earth's center AND from sea level." },
+          { letter: "D", text: "Everest grows about 4mm taller per year due to tectonic activity." }
+        ],
+        lieIndex: 2,
+        explanation: "From Earth's center, Mt. Chimborazo in Ecuador wins — Earth bulges at the equator, giving Chimborazo a head start of over 6,000 feet."
+      },
+      {
+        id: 3,
+        name: "Honey Bees",
+        facts: [
+          { letter: "A", text: "A worker bee makes only about 1/12 of a teaspoon of honey in its entire lifetime." },
+          { letter: "B", text: "Bees communicate the location of food through a 'waggle dance.'" },
+          { letter: "C", text: "Bees can fly at speeds up to 50 mph." },
+          { letter: "D", text: "Queen bees can live up to 5 years." }
+        ],
+        lieIndex: 2,
+        explanation: "Bees top out around 15 mph — fast for an insect, but nowhere near 50 mph. That would be Formula 1 bee."
+      },
+      {
+        id: 4,
+        name: "Lightning",
+        facts: [
+          { letter: "A", text: "A lightning bolt is hotter than the surface of the sun." },
+          { letter: "B", text: "Lightning strikes Earth about 100 times every second." },
+          { letter: "C", text: "The same spot is never struck by lightning twice." },
+          { letter: "D", text: "You can estimate a storm's distance: every 5 seconds between flash and thunder equals about one mile." }
+        ],
+        lieIndex: 2,
+        explanation: "This is one of the most popular myths ever. The Empire State Building gets struck by lightning about 20–25 times per year."
+      },
+      {
+        id: 5,
+        name: "Tardigrades",
+        facts: [
+          { letter: "A", text: "Tardigrades can survive in the vacuum of outer space." },
+          { letter: "B", text: "They can endure temperatures from -458°F to over 300°F." },
+          { letter: "C", text: "Tardigrades are also called 'water bears' or 'moss piglets.'" },
+          { letter: "D", text: "Tardigrades can survive for thousands of years without water." }
+        ],
+        lieIndex: 3,
+        explanation: "Decades without water — yes. Thousands of years — no evidence for that. They're tough, not immortal."
+      }
+    ];
+
+    let currentExhibit = 0;
+    let score = 0;
+    let results = []; // {exhibitIndex, correct}
+
+    function startGame() {
+      currentExhibit = 0;
+      score = 0;
+      results = [];
+      document.getElementById('score-screen').style.display = 'none';
+      document.getElementById('progress-wrap').style.display = 'block';
+      document.getElementById('game-area').style.display = 'block';
+      renderExhibit(currentExhibit);
+    }
+
+    function renderExhibit(idx) {
+      const exhibit = EXHIBITS[idx];
+      const total = EXHIBITS.length;
+
+      // Update progress
+      document.getElementById('progress-text').textContent = `Exhibit ${idx + 1} of ${total}`;
+      document.getElementById('progress-fill').style.width = `${(idx / total) * 100}%`;
+
+      const area = document.getElementById('game-area');
+
+      const factsHTML = exhibit.facts.map((f, i) => `
+        <button class="fact-btn" data-index="${i}" onclick="handleAnswer(${i})">
+          <div class="fact-letter">${f.letter}</div>
+          <div class="fact-text">${f.text}</div>
+        </button>
+      `).join('');
+
+      area.innerHTML = `
+        <div class="exhibit-card" id="exhibit-card">
+          <div class="exhibit-tag">Exhibit ${idx + 1} of ${total}</div>
+          <div class="exhibit-name">${exhibit.name}</div>
+          <div class="exhibit-instruction">Which fact below is a lie?</div>
+          <div class="facts-list" id="facts-list">
+            ${factsHTML}
+          </div>
+        </div>
+      `;
+    }
+
+    function handleAnswer(chosenIdx) {
+      const exhibit = EXHIBITS[currentExhibit];
+      const lieIdx = exhibit.lieIndex;
+      const isCorrect = chosenIdx === lieIdx;
+
+      if (isCorrect) score++;
+      results.push({ exhibitIndex: currentExhibit, correct: isCorrect });
+
+      // Disable all buttons
+      const buttons = document.querySelectorAll('.fact-btn');
+      buttons.forEach(btn => btn.disabled = true);
+
+      // Style the chosen button
+      const chosenBtn = buttons[chosenIdx];
+      if (isCorrect) {
+        chosenBtn.classList.add('correct');
+      } else {
+        chosenBtn.classList.add('wrong');
+        // Reveal the real lie
+        buttons[lieIdx].classList.add('reveal-lie');
+      }
+
+      // Dim the rest
+      buttons.forEach((btn, i) => {
+        if (i !== chosenIdx && i !== lieIdx) {
+          btn.classList.add('dimmed');
+        }
+      });
+
+      // Show explanation
+      const card = document.getElementById('exhibit-card');
+      const expBox = document.createElement('div');
+      expBox.className = 'explanation-box';
+      expBox.innerHTML = `
+        <div class="exp-label">${isCorrect ? '✓ Correct — The Lie Exposed' : '✗ Not quite — Here\'s the truth'}</div>
+        ${exhibit.explanation}
+      `;
+      card.appendChild(expBox);
+
+      // Show continue / finish button
+      const isLast = currentExhibit === EXHIBITS.length - 1;
+      const continueBtn = document.createElement('button');
+      continueBtn.className = 'continue-btn';
+      continueBtn.textContent = isLast ? 'See My Score →' : 'Next Exhibit →';
+      continueBtn.onclick = isLast ? showScore : nextExhibit;
+      card.appendChild(continueBtn);
+    }
+
+    function nextExhibit() {
+      currentExhibit++;
+      renderExhibit(currentExhibit);
+    }
+
+    function showScore() {
+      // Update progress bar to full
+      document.getElementById('progress-fill').style.width = '100%';
+      document.getElementById('progress-text').textContent = 'Complete!';
+
+      document.getElementById('game-area').style.display = 'none';
+
+      const scoreScreen = document.getElementById('score-screen');
+      scoreScreen.style.display = 'block';
+      // Force reflow for animation
+      scoreScreen.style.animation = 'none';
+      void scoreScreen.offsetHeight;
+      scoreScreen.style.animation = '';
+
+      document.getElementById('final-score').textContent = score;
+
+      let rating, tagline;
+      if (score === 5) {
+        rating = "Master Detective";
+        tagline = "You spotted every lie. The museum's curator is sweating.";
+      } else if (score >= 3) {
+        rating = "Good Eye";
+        tagline = "A few lies slipped past you — but you've got the instincts.";
+      } else {
+        rating = "The Museum Fooled You";
+        tagline = "The exhibits got the better of you this time. Try again?";
+      }
+
+      document.getElementById('score-rating').textContent = rating;
+      document.getElementById('score-tagline').textContent = tagline;
+
+      // Build recap
+      const recapList = document.getElementById('recap-list');
+      recapList.innerHTML = results.map(r => {
+        const exhibit = EXHIBITS[r.exhibitIndex];
+        return `
+          <div class="recap-item ${r.correct ? 'got-it' : 'missed'}">
+            <div class="recap-exhibit-name">${r.correct ? '✓' : '✗'} ${exhibit.name}</div>
+            <div class="recap-explanation">${exhibit.explanation}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Kick off
+    startGame();
+  </script>
+</body>
+</html>

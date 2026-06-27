@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Capsule</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d1a;
+      --surface: #13132a;
+      --surface2: #1a1a35;
+      --teal: #00c9a7;
+      --teal-dim: #00a889;
+      --teal-glow: rgba(0,201,167,0.18);
+      --text: #e8e4d9;
+      --text-dim: #9e9a8e;
+      --sepia-bg: #f5f0e4;
+      --sepia-text: #3a2e1e;
+      --sepia-line: #c8b89a;
+      --gold: #d4a843;
+      --red: #e05252;
+      --green: #52c97a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .back-link {
+      color: var(--teal);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .back-link:hover { opacity: 1; text-decoration: underline; }
+
+    .game-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--teal);
+      text-shadow: 0 0 20px var(--teal-glow);
+    }
+
+    .progress-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      text-align: right;
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      width: 100%;
+      max-width: 720px;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), #00f5d4);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* ── Score bar ── */
+    .score-strip {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .score-label { font-size: 0.8rem; color: var(--text-dim); }
+    .score-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--teal);
+    }
+
+    /* ── Vintage notecard ── */
+    .notecard {
+      width: 100%;
+      max-width: 720px;
+      background: var(--sepia-bg);
+      border-radius: 4px;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow:
+        0 0 0 1px rgba(200,184,154,0.6),
+        0 8px 32px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+      margin-bottom: 28px;
+    }
+
+    /* tape strip at top */
+    .notecard::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 22px;
+      background: rgba(220,210,180,0.55);
+      border: 1px solid rgba(180,160,120,0.4);
+      border-radius: 2px;
+    }
+
+    /* ruled lines */
+    .notecard-lines {
+      position: absolute;
+      inset: 0;
+      border-radius: 4px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .notecard-lines::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        transparent,
+        transparent 27px,
+        var(--sepia-line) 28px
+      );
+      opacity: 0.35;
+      top: 48px;
+    }
+
+    .notecard-inner { position: relative; z-index: 1; }
+
+    .notecard-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sepia-text);
+      opacity: 0.5;
+      margin-bottom: 12px;
+    }
+
+    .notecard-heading {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--sepia-text);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .notecard-body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 0.97rem;
+      color: var(--sepia-text);
+      line-height: 1.85;
+      font-style: italic;
+    }
+
+    /* corner stamp */
+    .notecard-stamp {
+      position: absolute;
+      bottom: 20px;
+      right: 24px;
+      width: 52px;
+      height: 52px;
+      border: 2px solid rgba(58,46,30,0.25);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      opacity: 0.3;
+      transform: rotate(6deg);
+    }
+
+    /* ── Decade buttons ── */
+    .decade-grid {
+      width: 100%;
+      max-width: 720px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .decade-btn {
+      background: var(--surface);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 14px 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.2s, transform 0.12s, box-shadow 0.2s;
+    }
+    .decade-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--teal-glow);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .decade-btn:hover:not(:disabled) {
+      border-color: var(--teal);
+      box-shadow: 0 0 14px var(--teal-glow);
+      transform: translateY(-2px);
+    }
+    .decade-btn:hover:not(:disabled)::before { opacity: 1; }
+    .decade-btn:active:not(:disabled) { transform: translateY(0); }
+    .decade-btn:disabled { cursor: default; opacity: 0.7; }
+
+    .decade-btn .tag-year {
+      display: block;
+      font-size: 1.1rem;
+    }
+    .decade-btn .tag-points {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .decade-btn.correct {
+      background: rgba(82,201,122,0.15);
+      border-color: var(--green);
+      box-shadow: 0 0 18px rgba(82,201,122,0.3);
+    }
+    .decade-btn.wrong {
+      background: rgba(224,82,82,0.1);
+      border-color: var(--red);
+    }
+    .decade-btn.near {
+      background: rgba(212,168,67,0.12);
+      border-color: var(--gold);
+      box-shadow: 0 0 14px rgba(212,168,67,0.2);
+    }
+    .decade-btn.answer {
+      background: rgba(82,201,122,0.1);
+      border-color: var(--green);
+      animation: pulse-correct 0.4s ease;
+    }
+
+    @keyframes pulse-correct {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Reveal panel ── */
+    .reveal-panel {
+      width: 100%;
+      max-width: 720px;
+      background: var(--surface);
+      border: 1.5px solid rgba(0,201,167,0.25);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      animation: slide-in 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal-header {
+      background: linear-gradient(90deg, rgba(0,201,167,0.12), transparent);
+      padding: 14px 22px;
+      border-bottom: 1px solid rgba(0,201,167,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .reveal-badge {
+      font-size: 1.4rem;
+    }
+    .reveal-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--teal);
+    }
+    .reveal-decade {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .reveal-clues {
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .clue-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      opacity: 0;
+      transform: translateX(-10px);
+      animation: clue-appear 0.35s forwards;
+    }
+    @keyframes clue-appear {
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .clue-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .clue-text {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .points-earned {
+      padding: 12px 22px 16px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .points-earned strong { color: var(--teal); }
+
+    /* ── Next button ── */
+    .next-btn {
+      background: var(--teal);
+      color: #0d0d1a;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 14px 36px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.12s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(0,201,167,0.35);
+    }
+    .next-btn:hover {
+      background: #00f5d4;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(0,201,167,0.5);
+    }
+    .next-btn:active { transform: translateY(0); }
+
+    /* ── End screen ── */
+    .end-screen {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      animation: slide-in 0.5s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .end-trophy {
+      font-size: 5rem;
+      line-height: 1;
+      filter: drop-shadow(0 0 24px rgba(0,201,167,0.4));
+    }
+
+    .end-rating {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--teal);
+      text-shadow: 0 0 24px var(--teal-glow);
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+
+    .end-score-display {
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: var(--text);
+      text-align: center;
+      line-height: 1;
+    }
+    .end-score-display span {
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: var(--text-dim);
+    }
+
+    .end-summary {
+      width: 100%;
+      background: var(--surface);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.88rem;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row .obj-label { color: var(--text-dim); }
+    .summary-row .obj-result {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pts-badge {
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+    .pts-2 { background: rgba(82,201,122,0.2); color: var(--green); }
+    .pts-1 { background: rgba(212,168,67,0.2); color: var(--gold); }
+    .pts-0 { background: rgba(224,82,82,0.15); color: var(--red); }
+
+    .end-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--teal);
+      border: 1.5px solid var(--teal);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 12px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      transition: background 0.2s, transform 0.12s;
+    }
+    .btn-outline:hover {
+      background: var(--teal-glow);
+      transform: translateY(-2px);
+    }
+
+    /* ── Hidden helper ── */
+    .hidden { display: none !important; }
+
+    /* ── Responsive ── */
+    @media (max-width: 500px) {
+      .decade-grid { grid-template-columns: repeat(2, 1fr); }
+      .game-title { font-size: 1.15rem; }
+      .notecard { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="index.html">← Back to Hub</a>
+  <div class="game-title">TIME CAPSULE</div>
+  <div class="progress-label" id="progress-label">Object 1 of 3</div>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+</div>
+
+<div class="score-strip">
+  <span class="score-label">Score:</span>
+  <span class="score-value" id="score-display">0 / 6</span>
+</div>
+
+<!-- ══════════════ GAME SCREEN ══════════════ -->
+<div id="game-screen">
+
+  <!-- Notecard -->
+  <div class="notecard" id="notecard">
+    <div class="notecard-lines"></div>
+    <div class="notecard-inner">
+      <div class="notecard-tag" id="card-tag">ITEM INVENTORY — OBJECT #1</div>
+      <div class="notecard-heading" id="card-heading">What decade is this from?</div>
+      <div class="notecard-body" id="card-body"></div>
+    </div>
+    <div class="notecard-stamp" id="card-stamp">📦</div>
+  </div>
+
+  <!-- Decade buttons -->
+  <div class="decade-grid" id="decade-grid">
+    <button class="decade-btn" data-decade="1960s">
+      <span class="tag-year">1960s</span>
+      <span class="tag-points">2 pts if exact</span>
+    </button>
+    <button class="decade-btn" data-decade="1970s">
+      <span class="tag-year">1970s</span>
+      <span class="tag-points">2 pts if exact</span>
+    </button>
+    <button class="decade-btn" data-decade="1980s">
+      <span class="tag-year">1980s</span>
+      <span class="tag-points">2 pts if exact</span>
+    </button>
+    <button class="decade-btn" data-decade="1990s">
+      <span class="tag-year">1990s</span>
+      <span class="tag-points">2 pts if exact</span>
+    </button>
+    <button class="decade-btn" data-decade="2000s">
+      <span class="tag-year">2000s</span>
+      <span class="tag-points">2 pts if exact</span>
+    </button>
+    <button class="decade-btn" data-decade="2010s">
+      <span class="tag-year">2010s</span>
+      <span class="tag-points">2 pts if exact</span>
+    </button>
+  </div>
+
+  <!-- Reveal panel (hidden until guess) -->
+  <div class="reveal-panel hidden" id="reveal-panel">
+    <div class="reveal-header">
+      <div class="reveal-badge" id="reveal-badge">🎯</div>
+      <div>
+        <div class="reveal-title" id="reveal-title">Correct!</div>
+        <div class="reveal-decade" id="reveal-decade-label"></div>
+      </div>
+    </div>
+    <div class="reveal-clues" id="reveal-clues"></div>
+    <div class="points-earned" id="points-earned-msg"></div>
+  </div>
+
+  <button class="next-btn hidden" id="next-btn">Next Object →</button>
+
+</div>
+<!-- ══════════════ END SCREEN ══════════════ -->
+<div id="end-screen" class="end-screen hidden">
+  <div class="end-trophy" id="end-trophy">🏆</div>
+  <div class="end-rating" id="end-rating">Time Lord</div>
+  <div class="end-score-display" id="end-score-big">6 <span>/ 6 pts</span></div>
+
+  <div class="end-summary" id="end-summary"></div>
+
+  <div class="end-actions">
+    <button class="next-btn" id="play-again-btn">Play Again</button>
+    <a class="btn-outline" href="index.html">Back to Hub</a>
+  </div>
+</div>
+
+<script>
+  // ══════════════════════════════════════════════════════════
+  //  DATA
+  // ══════════════════════════════════════════════════════════
+  const OBJECTS = [
+    {
+      id: 1,
+      stamp: '🎒',
+      answer: '1990s',
+      description: `You pry open a dusty backpack with a broken zipper. Inside you find: a Tamagotchi with a cracked screen and a dead battery, a Pokémon Red game cartridge (no Game Boy in sight), a folded note written in purple gel pen with a smiley face on the corner, a Spice Girls holographic sticker peeling off the front pocket, and a crumpled flyer for a local roller skating rink charging $3.50 admission.`,
+      clues: [
+        'Tamagotchi launched 1996.',
+        'Pokémon Red was 1996.',
+        'Gel pens were huge in the late 90s.',
+        'Spice Girls = 1994–2000.',
+        '$3.50 roller rink prices were classic 90s. Dead giveaway.'
+      ]
+    },
+    {
+      id: 2,
+      stamp: '🥪',
+      answer: '1970s',
+      description: `A battered metal lunchbox with a painting of a man in a white sequined jumpsuit holding a microphone. Inside: a mood ring with a cracked dome, a tiny transistor radio with a broken antenna, a wax paper–wrapped sandwich, a worn 'Pet Rock' care booklet, and a ticket stub from a movie theater — the film's title has been smudged off, but the price reads 'Adults: $2.00.'`,
+      clues: [
+        "Elvis's iconic white jumpsuit was 1970s.",
+        'Mood rings were a 1975 craze.',
+        'Transistor radios were 70s tech.',
+        'Pet Rocks were a 1975 fad.',
+        'Movie tickets for $2 places this firmly in the 70s.'
+      ]
+    },
+    {
+      id: 3,
+      stamp: '🎧',
+      answer: '2010s',
+      description: `A bright drawstring bag, slightly sticky with energy drink residue. Inside: a pair of oversized Beats headphones with a dead battery, a Minecraft diamond sword keychain, a Starbucks gold card, a fidget spinner with one broken arm, a cracked iPhone in an Otterbox case, and a printout of a Snapchat score circled in sharpie with 'beat THIS' written next to it.`,
+      clues: [
+        'Beats headphones peaked around 2012–2016.',
+        'Minecraft became huge in 2011.',
+        'Starbucks gold cards launched 2010.',
+        'Fidget spinners were a 2017 phenomenon.',
+        'OtterBox + iPhone = 2010s.',
+        'Snapchat launched 2011.'
+      ]
+    }
+  ];
+
+  const DECADES = ['1960s','1970s','1980s','1990s','2000s','2010s'];
+
+  // ══════════════════════════════════════════════════════════
+  //  STATE
+  // ══════════════════════════════════════════════════════════
+  let currentRound = 0;
+  let totalScore = 0;
+  let roundResults = []; // { pts, guess, answer }
+
+  // ══════════════════════════════════════════════════════════
+  //  HELPERS
+  // ══════════════════════════════════════════════════════════
+  function decadeIndex(d) { return DECADES.indexOf(d); }
+
+  function calcPoints(guess, answer) {
+    const diff = Math.abs(decadeIndex(guess) - decadeIndex(answer));
+    if (diff === 0) return 2;
+    if (diff === 1) return 1;
+    return 0;
+  }
+
+  function getRating(score) {
+    if (score >= 6) return { label: 'Time Lord',     trophy: '⏳' };
+    if (score >= 4) return { label: 'History Buff',  trophy: '📜' };
+    if (score >= 2) return { label: 'Getting Warmer', trophy: '🔍' };
+    return              { label: 'Lost in Time',   trophy: '🌀' };
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  RENDER ROUND
+  // ══════════════════════════════════════════════════════════
+  function renderRound() {
+    const obj = OBJECTS[currentRound];
+
+    // progress
+    document.getElementById('progress-label').textContent = `Object ${currentRound + 1} of ${OBJECTS.length}`;
+    document.getElementById('progress-bar').style.width = `${(currentRound / OBJECTS.length) * 100}%`;
+    document.getElementById('score-display').textContent = `${totalScore} / 6`;
+
+    // notecard
+    document.getElementById('card-tag').textContent = `ITEM INVENTORY — OBJECT #${obj.id}`;
+    document.getElementById('card-body').textContent = obj.description;
+    document.getElementById('card-stamp').textContent = obj.stamp;
+
+    // buttons — reset state
+    const btns = document.querySelectorAll('.decade-btn');
+    btns.forEach(b => {
+      b.disabled = false;
+      b.className = 'decade-btn';
+    });
+
+    // hide reveal & next
+    document.getElementById('reveal-panel').classList.add('hidden');
+    document.getElementById('next-btn').classList.add('hidden');
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  HANDLE GUESS
+  // ══════════════════════════════════════════════════════════
+  function handleGuess(guessedDecade) {
+    const obj = OBJECTS[currentRound];
+    const pts = calcPoints(guessedDecade, obj.answer);
+
+    totalScore += pts;
+    roundResults.push({ pts, guess: guessedDecade, answer: obj.answer });
+
+    // update score display
+    document.getElementById('score-display').textContent = `${totalScore} / 6`;
+
+    // style buttons
+    const btns = document.querySelectorAll('.decade-btn');
+    btns.forEach(b => {
+      b.disabled = true;
+      const d = b.dataset.decade;
+      if (d === obj.answer) {
+        b.classList.add('answer');
+      } else if (d === guessedDecade) {
+        if (pts === 1) b.classList.add('near');
+        else if (pts === 0) b.classList.add('wrong');
+      }
+    });
+
+    // show reveal
+    showReveal(pts, guessedDecade, obj);
+
+    // show next / finish btn
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.classList.remove('hidden');
+    if (currentRound >= OBJECTS.length - 1) {
+      nextBtn.textContent = 'See Results →';
+    } else {
+      nextBtn.textContent = 'Next Object →';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  SHOW REVEAL PANEL
+  // ══════════════════════════════════════════════════════════
+  function showReveal(pts, guess, obj) {
+    const panel = document.getElementById('reveal-panel');
+    const badge = document.getElementById('reveal-badge');
+    const title = document.getElementById('reveal-title');
+    const decLabel = document.getElementById('reveal-decade-label');
+    const cluesEl = document.getElementById('reveal-clues');
+    const ptsMsg = document.getElementById('points-earned-msg');
+
+    panel.classList.remove('hidden');
+
+    if (pts === 2) {
+      badge.textContent = '🎯';
+      title.textContent = 'Spot on!';
+      title.style.color = 'var(--green)';
+    } else if (pts === 1) {
+      badge.textContent = '📅';
+      title.textContent = 'Close — one decade off!';
+      title.style.color = 'var(--gold)';
+    } else {
+      badge.textContent = '⏪';
+      title.textContent = guess === obj.answer ? 'Correct!' : 'Not quite.';
+      title.style.color = pts === 0 ? 'var(--red)' : 'var(--teal)';
+    }
+
+    decLabel.textContent = `Answer: ${obj.answer}${guess !== obj.answer ? ` · You guessed: ${guess}` : ''}`;
+
+    // build clue list with staggered animation
+    cluesEl.innerHTML = '';
+    const sentences = obj.clues;
+    sentences.forEach((clue, i) => {
+      const item = document.createElement('div');
+      item.className = 'clue-item';
+      item.style.animationDelay = `${i * 90 + 80}ms`;
+      item.innerHTML = `<div class="clue-dot"></div><div class="clue-text">${clue}</div>`;
+      cluesEl.appendChild(item);
+    });
+
+    ptsMsg.innerHTML = `You earned <strong>+${pts} point${pts !== 1 ? 's' : ''}</strong> this round.`;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  NEXT / FINISH
+  // ══════════════════════════════════════════════════════════
+  function advance() {
+    currentRound++;
+    if (currentRound >= OBJECTS.length) {
+      showEndScreen();
+    } else {
+      renderRound();
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  END SCREEN
+  // ══════════════════════════════════════════════════════════
+  function showEndScreen() {
+    document.getElementById('game-screen').classList.add('hidden');
+    const end = document.getElementById('end-screen');
+    end.classList.remove('hidden');
+
+    // update progress to 100%
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('progress-label').textContent = 'Complete!';
+    document.getElementById('score-display').textContent = `${totalScore} / 6`;
+
+    const rating = getRating(totalScore);
+    document.getElementById('end-trophy').textContent = rating.trophy;
+    document.getElementById('end-rating').textContent = rating.label;
+    document.getElementById('end-score-big').innerHTML = `${totalScore} <span>/ 6 pts</span>`;
+
+    // summary table
+    const summary = document.getElementById('end-summary');
+    summary.innerHTML = '';
+    OBJECTS.forEach((obj, i) => {
+      const r = roundResults[i];
+      const row = document.createElement('div');
+      row.className = 'summary-row';
+      const ptsCls = `pts-${r.pts}`;
+      const guessStr = r.guess === r.answer
+        ? `Guessed ${r.guess} ✓`
+        : `Guessed ${r.guess} → correct: ${r.answer}`;
+      row.innerHTML = `
+        <div class="obj-label">Object ${i + 1} <span style="color:var(--text-dim);font-size:0.78rem">${obj.stamp}</span></div>
+        <div class="obj-result">
+          <span style="font-size:0.82rem;color:var(--text-dim)">${guessStr}</span>
+          <span class="pts-badge ${ptsCls}">+${r.pts} pt${r.pts !== 1 ? 's' : ''}</span>
+        </div>`;
+      summary.appendChild(row);
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  RESET / PLAY AGAIN
+  // ══════════════════════════════════════════════════════════
+  function resetGame() {
+    currentRound = 0;
+    totalScore = 0;
+    roundResults = [];
+
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    renderRound();
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  EVENT LISTENERS
+  // ══════════════════════════════════════════════════════════
+  document.getElementById('decade-grid').addEventListener('click', e => {
+    const btn = e.target.closest('.decade-btn');
+    if (!btn || btn.disabled) return;
+    handleGuess(btn.dataset.decade);
+  });
+
+  document.getElementById('next-btn').addEventListener('click', advance);
+  document.getElementById('play-again-btn').addEventListener('click', resetGame);
+
+  // ══════════════════════════════════════════════════════════
+  //  INIT
+  // ══════════════════════════════════════════════════════════
+  renderRound();
+</script>
+</body>
+</html>
