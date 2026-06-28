@@ -356,7 +356,8 @@
       tennis:     { keywords:['tennis','atp','wta','wimbledon','us open','french open','australian open'], emoji:'🎾', label:'Tennis' },
     };
 
-    fetch('newsletter.json')
+    const _v = Date.now();
+    fetch('newsletter.json?v=' + _v)
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(d => { todayData = d; renderToday(d); })
       .catch(() => {
@@ -364,7 +365,7 @@
           '<p class="state-msg" style="grid-column:1/-1">Could not load today\'s edition.</p>';
       });
 
-    fetch('archive/index.json').then(r => r.ok ? r.json() : []).then(d => { archiveData = d; }).catch(() => {});
+    fetch('archive/index.json?v=' + _v).then(r => r.ok ? r.json() : []).then(d => { archiveData = d; }).catch(() => {});
 
     function renderToday(d) {
       document.getElementById('meta-date').textContent = d.date;
@@ -453,7 +454,7 @@
       const cfg = SPORT_CONFIG[slug] || { emoji:'🏅', label: slug };
       const sports = (todayData && todayData.sports) || [];
       const kws = cfg.keywords || [slug];
-      const match = sports.find(s => kws.some(kw => s.sport.toLowerCase().includes(kw) || s.slug === slug));
+      const match = sports.find(s => s.slug === slug) || sports.find(s => kws.some(kw => s.sport.toLowerCase().includes(kw)));
 
       document.getElementById('sport-emoji').textContent = match ? match.emoji : cfg.emoji;
       document.getElementById('sport-title').textContent = match ? match.sport : cfg.label;
