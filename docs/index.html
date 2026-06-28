@@ -421,20 +421,7 @@
         document.querySelectorAll('.article:not(.topic-view)').forEach(a => a.style.display = '');
         document.querySelectorAll('.article.topic-view').forEach(a => a.classList.remove('active'));
       } else {
-        showView('today');
-        // hide featured grid, show matching topic article
-        document.querySelectorAll('.article:not(.topic-view)').forEach(a => a.style.display = 'none');
-        const arts = document.querySelectorAll('.article.topic-view');
-        let found = false;
-        arts.forEach(a => {
-          const match = a.dataset.section === t || a.dataset.section.startsWith(t);
-          a.classList.toggle('active', match);
-          if (match) found = true;
-        });
-        if (!found) {
-          document.querySelectorAll('.article:not(.topic-view)').forEach(a => a.style.display = '');
-          showArchiveView(t.toLowerCase(), btn.textContent.trim());
-        }
+        showArchiveView(t.toLowerCase(), btn.textContent.trim());
       }
     });
 
