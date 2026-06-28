@@ -85,5 +85,111 @@
       "accent": "#00f5ff"
     }
   ],
-  "sports": []
+  "sports": [
+    {
+      "sport": "FIFA World Cup 2026",
+      "slug": "soccer",
+      "emoji": "⚽",
+      "inSeason": true,
+      "games": [
+        { "away": "Canada", "home": "South Africa", "awayScore": null, "homeScore": null, "status": "Today · 3:00 PM ET" },
+        { "away": "USA", "home": "Bosnia-Herzegovina", "awayScore": null, "homeScore": null, "status": "R32 · Jul 1" },
+        { "away": "Argentina", "home": "Austria", "awayScore": 2, "homeScore": 0, "status": "Final" },
+        { "away": "Algeria", "home": "Jordan", "awayScore": 2, "homeScore": 1, "status": "Final" },
+        { "away": "France", "home": "Iraq", "awayScore": 3, "homeScore": 0, "status": "Final" },
+        { "away": "Norway", "home": "Senegal", "awayScore": 3, "homeScore": 2, "status": "Final" }
+      ],
+      "standings": [
+        { "conference": "Group J — Final", "rank": 1, "team": "🇦🇷 Argentina", "played": 3, "wins": 3, "losses": 0, "pts": 9 },
+        { "conference": "Group J — Final", "rank": 2, "team": "🇩🇿 Algeria", "played": 3, "wins": 2, "losses": 1, "pts": 6 },
+        { "conference": "Group J — Final", "rank": 3, "team": "🇯🇴 Jordan", "played": 3, "wins": 1, "losses": 2, "pts": 3 },
+        { "conference": "Group J — Final", "rank": 4, "team": "🇦🇹 Austria", "played": 3, "wins": 0, "losses": 3, "pts": 0 },
+        { "conference": "Group D — Final", "rank": 1, "team": "🇺🇸 United States", "played": 3, "wins": 2, "losses": 0, "pts": 7 },
+        { "conference": "Group D — Final", "rank": 2, "team": "🇧🇦 Bosnia-Herzegovina", "played": 3, "wins": 1, "losses": 1, "pts": 4 },
+        { "conference": "Group B — Final", "rank": 1, "team": "🇨🇭 Switzerland", "played": 3, "wins": 2, "losses": 0, "pts": 7 },
+        { "conference": "Group B — Final", "rank": 2, "team": "🇨🇦 Canada", "played": 3, "wins": 1, "losses": 1, "pts": 4 }
+      ],
+      "topPlayers": [
+        { "name": "Lionel Messi", "team": "Argentina", "value": 18, "stat": "Goals — All-Time Record" },
+        { "name": "Kylian Mbappé", "team": "France", "value": 16, "stat": "Goals" },
+        { "name": "Vinicius Jr.", "team": "Brazil", "value": 5, "stat": "Goals" },
+        { "name": "Erling Haaland", "team": "Norway", "value": 4, "stat": "Goals" },
+        { "name": "Ousmane Dembélé", "team": "France", "value": 3, "stat": "Goals" }
+      ]
+    },
+    {
+      "sport": "NFL Football",
+      "slug": "football",
+      "emoji": "🏈",
+      "inSeason": false
+    },
+    {
+      "sport": "NBA Basketball",
+      "slug": "basketball",
+      "emoji": "🏀",
+      "inSeason": false
+    },
+    {
+      "sport": "MLB Baseball",
+      "slug": "baseball",
+      "emoji": "⚾",
+      "inSeason": true,
+      "games": [
+        { "away": "NY Yankees", "home": "Toronto Blue Jays", "awayScore": null, "homeScore": null, "status": "1:07 PM ET" },
+        { "away": "Atlanta Braves", "home": "Miami Marlins", "awayScore": null, "homeScore": null, "status": "1:10 PM ET" },
+        { "away": "Milwaukee Brewers", "home": "Chicago Cubs", "awayScore": null, "homeScore": null, "status": "2:20 PM ET" },
+        { "away": "San Diego Padres", "home": "LA Dodgers", "awayScore": null, "homeScore": null, "status": "4:10 PM ET" }
+      ],
+      "standings": [
+        { "division": "AL East", "rank": 1, "team": "New York Yankees", "played": 81, "wins": 48, "losses": 33, "pts": ".593", "ptsLabel": "Pct" },
+        { "division": "AL East", "rank": 2, "team": "Tampa Bay Rays", "played": 77, "wins": 44, "losses": 33, "pts": ".571", "ptsLabel": "Pct" },
+        { "division": "AL Central", "rank": 1, "team": "Cleveland Guardians", "played": 81, "wins": 42, "losses": 39, "pts": ".519", "ptsLabel": "Pct" },
+        { "division": "AL West", "rank": 1, "team": "Seattle Mariners", "played": 83, "wins": 42, "losses": 41, "pts": ".506", "ptsLabel": "Pct" },
+        { "division": "NL East", "rank": 1, "team": "Atlanta Braves", "played": 80, "wins": 49, "losses": 31, "pts": ".613", "ptsLabel": "Pct" },
+        { "division": "NL Central", "rank": 1, "team": "Milwaukee Brewers", "played": 78, "wins": 49, "losses": 29, "pts": ".628", "ptsLabel": "Pct" },
+        { "division": "NL West", "rank": 1, "team": "Los Angeles Dodgers", "played": 82, "wins": 52, "losses": 30, "pts": ".634", "ptsLabel": "Pct" }
+      ],
+      "topPlayers": [
+        { "name": "Shohei Ohtani", "team": "Los Angeles Dodgers", "value": 28, "stat": "Home Runs" },
+        { "name": "Aaron Judge", "team": "New York Yankees", "value": 24, "stat": "Home Runs" },
+        { "name": "Juan Soto", "team": "New York Mets", "value": ".328", "stat": "Batting Avg" },
+        { "name": "Freddie Freeman", "team": "Los Angeles Dodgers", "value": 68, "stat": "RBI" },
+        { "name": "Gunnar Henderson", "team": "Baltimore Orioles", "value": 22, "stat": "Home Runs" }
+      ]
+    },
+    {
+      "sport": "NHL Hockey",
+      "slug": "hockey",
+      "emoji": "🏒",
+      "inSeason": false
+    },
+    {
+      "sport": "Wimbledon 2026",
+      "slug": "tennis",
+      "emoji": "🎾",
+      "inSeason": true,
+      "games": [
+        { "away": "J. Sinner [1]", "home": "First Round", "awayScore": null, "homeScore": null, "status": "Mon Jun 29" },
+        { "away": "N. Djokovic [3]", "home": "First Round", "awayScore": null, "homeScore": null, "status": "Mon Jun 29" },
+        { "away": "I. Swiatek [1]", "home": "First Round", "awayScore": null, "homeScore": null, "status": "Mon Jun 29" },
+        { "away": "A. Zverev [2]", "home": "First Round", "awayScore": null, "homeScore": null, "status": "Tue Jun 30" },
+        { "away": "A. Sabalenka [2]", "home": "First Round", "awayScore": null, "homeScore": null, "status": "Tue Jun 30" }
+      ],
+      "standings": [
+        { "conference": "Men's Seeds", "rank": 1, "team": "Jannik Sinner 🇮🇹", "played": 0, "wins": 0, "losses": 0, "pts": "Defending Champ", "ptsLabel": "Status" },
+        { "conference": "Men's Seeds", "rank": 2, "team": "Alexander Zverev 🇩🇪", "played": 0, "wins": 0, "losses": 0, "pts": "French Open Champ", "ptsLabel": "Status" },
+        { "conference": "Men's Seeds", "rank": 3, "team": "Novak Djokovic 🇷🇸", "played": 0, "wins": 0, "losses": 0, "pts": "24× Grand Slams", "ptsLabel": "Status" },
+        { "conference": "Women's Seeds", "rank": 1, "team": "Iga Swiatek 🇵🇱", "played": 0, "wins": 0, "losses": 0, "pts": "Defending Champ", "ptsLabel": "Status" },
+        { "conference": "Women's Seeds", "rank": 2, "team": "Aryna Sabalenka 🇧🇾", "played": 0, "wins": 0, "losses": 0, "pts": "World No. 2", "ptsLabel": "Status" },
+        { "conference": "Women's Seeds", "rank": 3, "team": "Coco Gauff 🇺🇸", "played": 0, "wins": 0, "losses": 0, "pts": "World No. 3", "ptsLabel": "Status" }
+      ],
+      "topPlayers": [
+        { "name": "Jannik Sinner", "team": "Italy · ATP #1", "value": 1, "stat": "ATP Ranking" },
+        { "name": "Alexander Zverev", "team": "Germany · ATP #2", "value": 2, "stat": "ATP Ranking" },
+        { "name": "Novak Djokovic", "team": "Serbia · ATP #3", "value": 3, "stat": "ATP Ranking" },
+        { "name": "Iga Swiatek", "team": "Poland · WTA #1", "value": 1, "stat": "WTA Ranking" },
+        { "name": "Aryna Sabalenka", "team": "Belarus · WTA #2", "value": 2, "stat": "WTA Ranking" }
+      ]
+    }
+  ]
 }
