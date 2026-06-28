@@ -288,6 +288,7 @@
 
       <!-- SPORTS HUB -->
       <section id="sports-view">
+        <button onclick="backToToday()" style="margin:1rem 0 0.5rem;background:none;border:1px solid var(--ink);padding:.4rem 1rem;font-size:.75rem;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;color:var(--ink);transition:background .15s;" onmouseover="this.style.background='#f0ede4'" onmouseout="this.style.background='none'">← Back to Today's Articles</button>
         <div class="sports-hub-header">
           <span class="sports-hub-emoji" id="sport-emoji"></span>
           <div>
@@ -425,6 +426,14 @@
         showArchiveView(t.toLowerCase(), btn.textContent.trim());
       }
     });
+
+    function backToToday() {
+      showView('today');
+      document.querySelectorAll('.article:not(.topic-view)').forEach(a => a.style.display = '');
+      document.querySelectorAll('.article.topic-view').forEach(a => a.classList.remove('active'));
+      document.querySelectorAll('.topic-btn,.sport-sub-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.topic-btn[data-topic="all"]').classList.add('active');
+    }
 
     function setActiveBtn(btn) {
       document.querySelectorAll('.topic-btn,.sport-sub-btn').forEach(b => b.classList.remove('active'));
