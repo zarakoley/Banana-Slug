@@ -26,7 +26,7 @@ Today is about understanding the tool you'll use all week.
 
 ---
 
-## HOW TO TALK TO ME
+
 
 Be specific. Tell me:
 - WHAT you want
