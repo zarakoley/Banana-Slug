@@ -261,8 +261,8 @@
         <button class="topic-btn" data-topic="TECH">💻 Tech</button>
         <button class="topic-btn" data-topic="CULTURE">🎭 Culture</button>
         <button class="topic-btn" data-topic="ANIMALS">🐾 Animals</button>
-        <button class="topic-btn" id="sports-parent-btn" onclick="toggleSports(event)">⚽ Sports ▾</button>
-        <div class="sport-sub-nav" id="sports-sub-nav" style="display:none">
+        <button class="topic-btn" id="sports-parent-btn" onclick="toggleSports(event)">⚽ Sports ▴</button>
+        <div class="sport-sub-nav" id="sports-sub-nav">
           <button class="sport-sub-btn" onclick="showSport('soccer',this)">⚽ Soccer</button>
           <button class="sport-sub-btn" onclick="showSport('football',this)">🏈 Football</button>
           <button class="sport-sub-btn" onclick="showSport('basketball',this)">🏀 Basketball</button>
@@ -335,7 +335,7 @@
 
   <script>
     const GAMES_BASE = 'games/';
-    let todayData = null, archiveData = [], sportsOpen = false;
+    let todayData = null, archiveData = [], sportsOpen = true;
 
     const TOPIC_KEYWORDS = {
       world:   ['WORLD'],
